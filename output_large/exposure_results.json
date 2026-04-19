@@ -1,0 +1,373 @@
+{
+  "n_eligible": 145985,
+  "n_cats": 15,
+  "categories": [
+    "autos",
+    "entertainment",
+    "finance",
+    "foodanddrink",
+    "health",
+    "kids",
+    "lifestyle",
+    "movies",
+    "music",
+    "news",
+    "sports",
+    "travel",
+    "tv",
+    "video",
+    "weather"
+  ],
+  "analysis_a": {
+    "n_obs": 1852089,
+    "n_clusters": 145985,
+    "r2": 0.949379361491499,
+    "beta": [
+      0.0010349668115008236,
+      0.40711417879544265,
+      0.5206334348112706,
+      0.05912192335250477
+    ],
+    "se_clust": [
+      3.6912472293229545e-05,
+      0.0005077909804478584,
+      0.0005509520889736391,
+      0.0006680318174129327
+    ],
+    "t_clust": [
+      28.038404019084258,
+      801.7357426009785,
+      944.9704343278764,
+      88.50165787232187
+    ],
+    "p_clust": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "var_names": [
+      "Intercept",
+      "P1 taste (\u03b21)",
+      "P2 clicks (\u03b22)",
+      "P2 shown (\u03b23)"
+    ]
+  },
+  "analysis_a2": {
+    "n_obs": 1852089,
+    "n_clusters": 145985,
+    "r2": 0.9396772114041592,
+    "beta": [
+      0.0010565209461087903,
+      0.4116151341865367,
+      0.5084837231708244,
+      0.06649722564692517
+    ],
+    "se_clust": [
+      3.86042237303938e-05,
+      0.0005117740320092938,
+      0.000509392708377697,
+      0.0006397950329832924
+    ],
+    "t_clust": [
+      27.36801427448397,
+      804.2907776513792,
+      998.2155512006295,
+      103.93520146109306
+    ],
+    "p_clust": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "var_names": [
+      "Intercept",
+      "P1 taste (\u03b21)",
+      "P2 shown+clicked (\u03b22)",
+      "P2 shown+NOT clicked (\u03b23)"
+    ]
+  },
+  "analysis_b": {
+    "n_users": 144118,
+    "mean_shown": 0.02640415510086748,
+    "t_shown": 36.19413253564506,
+    "p_shown": 1.4583145382012283e-285,
+    "d_shown": 0.09534085868631448,
+    "mean_click": 0.37492810944837685,
+    "t_click": 433.01343699092314,
+    "p_click": 0.0,
+    "d_click": 1.140623355588626,
+    "mean_sc": 0.3721222198966872,
+    "t_sc": 427.09202490876424,
+    "p_sc": 0.0,
+    "d_sc": 1.1250254541333957,
+    "mean_snc": -0.015341243310532831,
+    "t_snc": -21.203227758933984,
+    "p_snc": 1.2671605431649337e-99,
+    "d_snc": -0.05585253188392895,
+    "n_sc": 144118,
+    "n_snc": 144118,
+    "t_sc_vs_snc": 457.1463754115933,
+    "p_sc_vs_snc": 0.0,
+    "perm_z": 76.73846660294218,
+    "perm_p": 0.0001999600079984003
+  },
+  "analysis_c": {
+    "n_treatment": 1257417,
+    "n_control": 353773,
+    "mean_treatment": -0.02387469310583052,
+    "mean_control": -0.006344034402674045,
+    "diff_pool": -0.017530658703156475,
+    "t_pool": -137.69762580327375,
+    "p_pool": 0.0,
+    "n_paired": 145742,
+    "mean_paired_diff": -0.02102084934839303,
+    "t_paired": -286.98046004059137,
+    "p_paired": 0.0,
+    "d_paired": -0.7517266810569673,
+    "treat_increased_frac": 5.3283835036427853e-05,
+    "ctrl_increased_frac": 3.392005608115939e-05,
+    "perm_z": -234.9090942619964,
+    "perm_p": 1.0
+  },
+  "analysis_f": {
+    "n_clicked": 578585,
+    "n_shown_nc": 1257417,
+    "n_neither": 353773,
+    "mean_clicked": 0.055765000931222365,
+    "mean_shown_nc": -0.02387469310583052,
+    "mean_neither": -0.006344034402674045,
+    "t_clicked": 301.4745050430853,
+    "p_clicked": 0.0,
+    "t_shown_nc": -366.264319252791,
+    "p_shown_nc": 0.0,
+    "t_neither": -101.17023142248954,
+    "p_neither": 0.0,
+    "diff_cl_vs_snc": 0.07963969403705289,
+    "t_cl_vs_snc": 503.90746164304437,
+    "p_cl_vs_snc": 0.0,
+    "diff_snc_vs_nei": -0.017530658703156475,
+    "t_snc_vs_nei": -137.69762580327375,
+    "p_snc_vs_nei": 0.0,
+    "diff_cl_vs_nei": 0.06210903533389641,
+    "t_cl_vs_nei": 257.0913100049722,
+    "p_cl_vs_nei": 0.0,
+    "within_user_cl_nc_mean": 0.10624555820531584,
+    "within_user_cl_nc_t": 379.55953147370917,
+    "within_user_cl_nc_p": 0.0,
+    "within_user_cl_nc_n": 145824,
+    "within_user_nc_nei_mean": -0.02102084934839303,
+    "within_user_nc_nei_t": -286.98046004059137,
+    "within_user_nc_nei_p": 0.0,
+    "within_user_nc_nei_n": 145742
+  },
+  "analysis_d": {
+    "rho": -0.2074625106893468,
+    "p_rho": 0.0,
+    "bins": [
+      {
+        "bin": 0,
+        "mean_shown_frac": 0.011825920107586915,
+        "mean_delta": -0.007727131544696299,
+        "n": 251878
+      },
+      {
+        "bin": 1,
+        "mean_shown_frac": 0.02759101077993312,
+        "mean_delta": -0.016141756807065713,
+        "n": 252086
+      },
+      {
+        "bin": 2,
+        "mean_shown_frac": 0.04514405777267814,
+        "mean_delta": -0.020567665049836363,
+        "n": 250657
+      },
+      {
+        "bin": 3,
+        "mean_shown_frac": 0.06708442260916786,
+        "mean_delta": -0.026373052696467437,
+        "n": 251849
+      },
+      {
+        "bin": 4,
+        "mean_shown_frac": 0.13755372213409411,
+        "mean_delta": -0.048646062588608936,
+        "n": 250947
+      }
+    ],
+    "ols_intercept": -0.005094091913739719,
+    "ols_beta": -0.32499183435542256,
+    "ols_se": 0.001906388990687581,
+    "ols_t": -170.4750897864801,
+    "ols_p": 0.0
+  },
+  "analysis_e": [
+    {
+      "category": "autos",
+      "clicked_mean": 0.06286321939626623,
+      "shown_nc_mean": -0.009531675051251477,
+      "neither_mean": -0.004417909226548597,
+      "n_clicked": 22161,
+      "n_shown_nc": 104420,
+      "n_neither": 19404,
+      "click_effect": 0.06728112862281482,
+      "exposure_effect": -0.00511376582470288
+    },
+    {
+      "category": "entertainment",
+      "clicked_mean": 0.05776853305100461,
+      "shown_nc_mean": -0.017119193258184076,
+      "neither_mean": -0.01166823528903097,
+      "n_clicked": 31020,
+      "n_shown_nc": 102930,
+      "n_neither": 12035,
+      "click_effect": 0.06943676834003558,
+      "exposure_effect": -0.005450957969153106
+    },
+    {
+      "category": "finance",
+      "clicked_mean": 0.07793946109612421,
+      "shown_nc_mean": -0.024704322759658528,
+      "neither_mean": -0.016040614778190198,
+      "n_clicked": 59796,
+      "n_shown_nc": 82326,
+      "n_neither": 3863,
+      "click_effect": 0.09398007587431441,
+      "exposure_effect": -0.00866370798146833
+    },
+    {
+      "category": "foodanddrink",
+      "clicked_mean": 0.062325782287721655,
+      "shown_nc_mean": -0.01563252781738034,
+      "neither_mean": -0.006190149217711549,
+      "n_clicked": 33403,
+      "n_shown_nc": 94558,
+      "n_neither": 18024,
+      "click_effect": 0.0685159315054332,
+      "exposure_effect": -0.009442378599668792
+    },
+    {
+      "category": "health",
+      "clicked_mean": 0.06224937323723724,
+      "shown_nc_mean": -0.018715510905705068,
+      "neither_mean": -0.009086239926868737,
+      "n_clicked": 32681,
+      "n_shown_nc": 92064,
+      "n_neither": 21240,
+      "click_effect": 0.07133561316410597,
+      "exposure_effect": -0.00962927097883633
+    },
+    {
+      "category": "lifestyle",
+      "clicked_mean": 0.08645034943250933,
+      "shown_nc_mean": -0.02807106573565894,
+      "neither_mean": -0.010532350628205685,
+      "n_clicked": 71943,
+      "n_shown_nc": 71337,
+      "n_neither": 2705,
+      "click_effect": 0.09698270006071502,
+      "exposure_effect": -0.017538715107453254
+    },
+    {
+      "category": "movies",
+      "clicked_mean": 0.06310674109207638,
+      "shown_nc_mean": -0.013946620338350847,
+      "neither_mean": -0.009982411428128115,
+      "n_clicked": 13935,
+      "n_shown_nc": 95571,
+      "n_neither": 36479,
+      "click_effect": 0.0730891525202045,
+      "exposure_effect": -0.003964208910222733
+    },
+    {
+      "category": "music",
+      "clicked_mean": 0.058638135421226555,
+      "shown_nc_mean": -0.03756272090192339,
+      "neither_mean": -0.03317215979365566,
+      "n_clicked": 39204,
+      "n_shown_nc": 101065,
+      "n_neither": 5716,
+      "click_effect": 0.09181029521488221,
+      "exposure_effect": -0.004390561108267729
+    },
+    {
+      "category": "news",
+      "clicked_mean": 0.02099054937498748,
+      "shown_nc_mean": -0.10508001052990913,
+      "neither_mean": -0.08111068669892199,
+      "n_clicked": 107823,
+      "n_shown_nc": 38077,
+      "n_neither": 85,
+      "click_effect": 0.10210123607390947,
+      "exposure_effect": -0.02396932383098714
+    },
+    {
+      "category": "sports",
+      "clicked_mean": 0.043313576833825224,
+      "shown_nc_mean": -0.04543787914618442,
+      "neither_mean": -0.054008016702165325,
+      "n_clicked": 67459,
+      "n_shown_nc": 75173,
+      "n_neither": 3353,
+      "click_effect": 0.09732159353599054,
+      "exposure_effect": 0.008570137555980906
+    },
+    {
+      "category": "travel",
+      "clicked_mean": 0.05985061832588086,
+      "shown_nc_mean": -0.01605516989247182,
+      "neither_mean": -0.010547602692839438,
+      "n_clicked": 25877,
+      "n_shown_nc": 99486,
+      "n_neither": 20622,
+      "click_effect": 0.0703982210187203,
+      "exposure_effect": -0.0055075671996323815
+    },
+    {
+      "category": "tv",
+      "clicked_mean": 0.026342664543822294,
+      "shown_nc_mean": -0.048870582701626225,
+      "neither_mean": -0.04080132650560956,
+      "n_clicked": 33366,
+      "n_shown_nc": 100249,
+      "n_neither": 12370,
+      "click_effect": 0.06714399104943186,
+      "exposure_effect": -0.008069256196016665
+    },
+    {
+      "category": "video",
+      "clicked_mean": 0.0747416194541044,
+      "shown_nc_mean": -0.005951066995616195,
+      "neither_mean": -0.0029690526902162047,
+      "n_clicked": 19926,
+      "n_shown_nc": 93173,
+      "n_neither": 32886,
+      "click_effect": 0.0777106721443206,
+      "exposure_effect": -0.0029820143053999903
+    },
+    {
+      "category": "weather",
+      "clicked_mean": 0.09019245043952256,
+      "shown_nc_mean": -0.004012957050629429,
+      "neither_mean": -0.0030594476392698565,
+      "n_clicked": 19986,
+      "n_shown_nc": 106788,
+      "n_neither": 19211,
+      "click_effect": 0.09325189807879242,
+      "exposure_effect": -0.0009535094113595722
+    }
+  ],
+  "analysis_g": {
+    "total_pairs": 1257417,
+    "n_toward": 67,
+    "n_away": 196435,
+    "frac_toward": 5.3283835036427853e-05,
+    "frac_away": 0.15622104679672694,
+    "mean_mag_toward": 0.06593998543134443,
+    "mean_mag_away": 0.1528488454709089,
+    "t_mag": 5.9108358023594585,
+    "p_mag": 3.4093510480825295e-09
+  }
+}

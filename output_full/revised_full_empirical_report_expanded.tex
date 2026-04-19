@@ -1,0 +1,1142 @@
+
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{placeins}
+\usepackage{tabularx}
+\usepackage{enumitem}
+
+\hypersetup{colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue}
+\captionsetup{font=small, labelfont=bf}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\newcommand{\safeincludegraphics}[2][]{%
+  \IfFileExists{#2}{%
+    \includegraphics[#1]{#2}%
+  }{%
+    \begingroup
+    \setlength{\fboxsep}{10pt}%
+    \fbox{%
+      \begin{minipage}[c][0.28\textheight][c]{0.9\linewidth}
+      \centering
+      Figure file not found at compile time:\\[4pt]
+      \texttt{\detokenize{#2}}
+      \end{minipage}
+    }%
+    \endgroup
+  }%
+}
+
+\title{Empirical Analysis of Persuasive Recommendation\\with Endogenous Preference Dynamics:\\[4pt] Evidence from the MIND Dataset}
+\author{UBC Gang}
+\date{April 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This report asks whether a recommendation system merely sorts users into content they already prefer, or whether realized interaction with recommended content also changes what users want next. Using the Microsoft News Dataset (MIND), we organize the evidence around four linked empirical questions: (i) whether current taste predicts immediate click choice, (ii) whether tastes subsequently move in the direction of realized consumption, (iii) whether persuasion is local in the sense that only sufficiently nearby content is likely to be engaged with, and (iv) whether future taste is shaped by exposure itself or specifically by exposure that generates engagement.
+
+The main empirical results are consistent with a dynamic but locally constrained model of recommendation. First, cosine similarity between a user's estimated taste vector and an article's feature vector strongly predicts clicks, and a parsimonious multinomial logit based only on similarity achieves an AUC of 0.707. Second, in a three-period design, future taste shifts align strongly with what users clicked in the intermediate period, while a placebo alignment using earlier consumption is near zero. Third, click probability falls sharply with cosine distance, implying a practical persuasion radius: recommendation can move users, but mostly through a sequence of local steps rather than one large jump. Fourth, the distinction between exposure and engagement is central. Content that is shown and clicked predicts subsequent growth in the relevant category, whereas shown-but-ignored content does not; relative to a never-shown benchmark, ignored exposure is associated with movement away from that category.
+
+The evidence is observational rather than experimental, so the report should be read as documenting robust reduced-form patterns rather than causal treatment effects. Even with that caveat, the empirical message is clear: recommendation appears to shape future demand primarily through clicked content, with important heterogeneity across categories and with dynamic effects that accumulate over time.
+\end{abstract}
+
+%======================================================================
+\section{Empirical Questions and Roadmap}
+%======================================================================
+
+A dynamic model of persuasive recommendation needs support for four distinct ingredients:
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=0.25em, topsep=0.25em]
+    \item \textbf{Static preference prediction.} If current taste does not help predict what a user clicks now, then a taste state variable has little empirical content.
+    \item \textbf{Dynamic updating.} If recommendation is to be persuasive rather than merely allocative, realized consumption must predict subsequent changes in taste.
+    \item \textbf{Local reach.} If taste can only be moved by content that is already fairly close to a user's current interests, then recommendation operates through local steps and faces an exploration problem.
+    \item \textbf{Mechanism.} If impressions alone do not move taste, but clicked impressions do, then the relevant state variable for optimization is engagement rather than exposure volume.
+\end{enumerate}
+
+The rest of the report follows this logic. Section~\ref{sec:data} defines the dataset, the two taste representations used in the paper, and the analysis samples. Section~\ref{sec:utility} validates the static inner-product representation of utility. Section~\ref{sec:taste} studies dynamic updating using session-level persistence, a three-period design, and controlled regressions that condition on the platform's assortment. Sections~\ref{sec:persuasion} and \ref{sec:tradeoff} quantify the local reach of recommendation and the resulting exploitation--exploration tension. Section~\ref{sec:assortment} asks whether assortment effects are mostly within-category or spill across categories. Section~\ref{sec:exposure} isolates the exposure-versus-engagement mechanism. Section~\ref{sec:fine} then documents richer structure in the dynamics (including diversification, compounding, gateway categories, stickiness, and partial mean reversion) that a structural model would need to accommodate.
+
+%======================================================================
+\section{Data and Design}
+\label{sec:data}
+%======================================================================
+
+\subsection{Datasets}
+
+We use both publicly released versions of the Microsoft News Dataset (MIND). Table~\ref{tab:datasets} summarizes the calendar coverage and scale of each release. MINDlarge is the main dataset for the dynamic analyses because its 14-day horizon supports the three-period design introduced below. MINDsmall is used primarily as a robustness check and as a short-horizon comparison.
+
+\begin{table}[ht]
+\centering
+\caption{MIND dataset summary. Each impression contains a user's click history and a list of shown articles with binary click labels.}
+\label{tab:datasets}
+\begin{tabular}{llccc}
+\toprule
+Dataset & Split & Dates & Impressions & Users \\
+\midrule
+\multirow{2}{*}{MINDsmall} & Train & Nov 9--14 & 156,965 & \multirow{2}{*}{94,057} \\
+ & Dev & Nov 15 & 73,152 & \\
+\midrule
+\multirow{3}{*}{MINDlarge} & Train & Nov 9--14 & 2,232,748 & \multirow{3}{*}{${\sim}$1M} \\
+ & Dev & Nov 15 & 376,471 & \\
+ & Test & Nov 16--22 & 2,370,727 & \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+An \emph{impression} is the fundamental recommendation opportunity in MIND. Each impression records a user's click history up to that point and a slate of candidate articles that were shown to the user. When click labels are available, the impression also records which shown articles were clicked. The MINDlarge test split does not release click labels directly, but it does preserve the evolving click history. That feature lets us recover Period~3 clicks by comparing the user's recorded history before and after the test window. Articles are assigned to 15 broad categories and 285 subcategories. The large and small releases contain 104,151 and 51,282 unique articles, respectively.
+
+\subsection{Empirical objects and notation}
+\label{sec:notation}
+
+The analysis relies on two distinct taste representations, each suited to a different purpose.
+
+First, for \emph{article-level prediction} we use a \emph{feature-space taste vector}. Let article $j$ have feature vector $\mathbf{v}_j$. In the baseline specification, $\mathbf{v}_j$ is a 285-dimensional one-hot representation of the article's MIND subcategory. This representation has full coverage and therefore defines the main empirical object used in Sections~\ref{sec:utility}, \ref{sec:persuasion}, and \ref{sec:tradeoff}. As a secondary validity check, we also use a 100-dimensional dense article embedding obtained by averaging the pre-trained Wikidata entity embeddings attached to the article; this alternative representation is available for 73.7\% of articles.
+
+For each user $i$, the pre-impression feature-space taste vector is
+\[
+\tilde{\boldsymbol{\theta}}_i=\frac{1}{N_i^{\text{past}}}\sum_{j \in \mathcal{C}_i^{\text{past}}}\mathbf{v}_j,
+\]
+where $\mathcal{C}_i^{\text{past}}$ is the set of articles clicked by user $i$ prior to the focal impression and $N_i^{\text{past}}$ is the number of such clicks. This object is ``revealed taste'' in feature space: it is estimated from realized historical clicks rather than imposed parametrically.
+
+Second, for \emph{period-level dynamics} we use a \emph{category-share taste vector}. Let
+\[
+\boldsymbol{\theta}_i^{(\mathrm{P}t)} \in \mathbb{R}^{14}
+\]
+denote the vector of broad-category click shares for user $i$ in period $t$, where $\theta_{i,k}^{(\mathrm{P}t)}$ is the fraction of that user's clicks in category $k$ during the relevant period. The kids category is omitted from this representation because it has fewer than 100 clicks in total; the remaining 14 categories account for more than 99.9\% of all observed clicks. When we study impression-level assortment composition in Section~\ref{sec:assortment}, we retain all 15 categories because those tests do not require a stable user-level taste vector in every category.
+
+Table~\ref{tab:notation} collects the core notation used throughout the report.
+
+\begin{table}[ht]
+\centering
+\caption{Core notation. The report uses one taste object for article-level prediction and another for period-level category dynamics.}
+\label{tab:notation}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.23\textwidth}Y}
+\toprule
+Symbol & Definition \\
+\midrule
+$i$, $j$, $k$ & User, article, and category indices, respectively. \\
+$\mathbf{v}_j$ & Article feature vector. In the baseline specification this is a 285-dimensional subcategory one-hot vector; in the secondary specification it is a 100-dimensional entity embedding. \\
+$\tilde{\boldsymbol{\theta}}_i$ & User $i$'s pre-impression feature-space taste vector, computed as the mean feature vector of the user's previously clicked articles. \\
+$\boldsymbol{\theta}_i^{(\mathrm{P}t)}$ & User $i$'s period-$t$ category-share taste vector. Each element is a broad-category click share, so the vector sums to one over the 14 retained categories. \\
+$\mathbf{c}_i^{(\mathrm{P}t)}$ & Period-$t$ consumption vector formed from user $i$'s clicked content. In the period-level analyses this is a category-share vector. \\
+$\text{sim}_{ij}$ & Cosine similarity between user $i$'s current feature-space taste and article $j$: $\cos(\tilde{\boldsymbol{\theta}}_i,\mathbf{v}_j)$. \\
+$d_{ij}$ & Cosine distance between user $i$ and article $j$: $1-\cos(\tilde{\boldsymbol{\theta}}_i,\mathbf{v}_j)$. \\
+CTR & Click-through rate: the fraction of shown articles that are clicked. \\
+$\Delta\boldsymbol{\theta}_i$ & Net period-level taste change between Period~1 and Period~3: $\boldsymbol{\theta}_i^{(\mathrm{P3})} - \boldsymbol{\theta}_i^{(\mathrm{P1})}$. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+\subsection{Three-period design}
+\label{sec:three_period_design}
+
+The main dynamic tests use a three-period design built from the 14-day MINDlarge window:
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=0.2em, topsep=0.25em]
+    \item \textbf{Period 1 (P1, Nov~9--11):} baseline period used to measure pre-existing taste.
+    \item \textbf{Period 2 (P2, Nov~12--15):} intermediate period in which the platform shows content and users choose whether to engage with it.
+    \item \textbf{Period 3 (P3, Nov~16--22):} future period used to measure subsequent taste after the P2 recommendation and click history.
+\end{enumerate}
+
+This separation is essential for interpretation. P1 anchors the user's pre-period taste, P2 contains the potentially persuasive experiences, and P3 provides the post-period outcome. Many of the later results are easiest to read through this baseline-treatment-outcome lens: first estimate where the user started, then observe what the user was shown and what the user clicked, and finally ask whether the user's later taste moved in the same direction.
+
+\subsection{Analysis samples}
+
+Different analyses require different support conditions, so the effective sample varies across sections. Table~\ref{tab:analysis_samples} makes these restrictions explicit. The variation in sample size is methodological, not substantive: some statistics require only a pre-impression taste vector, while others require well-defined taste vectors before and after the focal period.
+
+\begin{table}[ht]
+\centering
+\caption{Analysis-specific samples. Sample sizes differ because later sections require well-defined taste vectors on both sides of the focal period.}
+\label{tab:analysis_samples}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.33\textwidth}Y>{\raggedleft\arraybackslash}p{0.17\textwidth}}
+\toprule
+Analysis block & Main restriction and interpretation & Sample size \\
+\midrule
+Impression-level click prediction, local persuasion, tradeoff, and assortment tests (Sections~\ref{sec:utility}--\ref{sec:assortment}) & Working sample of 50,000 users, giving 187,088 impressions and 7.15 million article-level observations. These tests require a pre-impression taste vector but not a complete three-period history. & 50,000 users \\
+Three-period taste-shift tests (Section~\ref{sec:three_period}) & Users must have at least two clicks in each of P1, P2, and P3 so that the baseline, intermediate, and future taste vectors are all well defined. & 143,574 users \\
+Exposure-versus-engagement analysis (Section~\ref{sec:exposure}) & Users must have at least two clicks in P1 and P2, at least five shown articles in P2, and at least two inferred clicks in P3. These restrictions ensure that both exposure and subsequent taste are observed with enough support. & 145,985 users \\
+Diversification split in Section~\ref{sec:fine} & Users with well-defined P1 and P3 entropy measures. & 146,477 users \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+Unless noted otherwise, all reported percentages, correlations, and test statistics are computed within the analysis-specific sample relevant to the corresponding section. In the 50,000-user working sample, the unconditional article-level CTR is 4.07\%. That baseline is useful when interpreting later tables: effects that move CTR by several percentage points are economically meaningful relative to the overall click rate.
+
+%======================================================================
+\section{Inner-Product Utility}
+\label{sec:utility}
+%======================================================================
+
+Before studying whether recommendation changes taste, we first need to verify that current taste predicts immediate click behavior in the way the model assumes. The reduced-form utility representation is
+\[
+u_{ij} = \langle \tilde{\boldsymbol{\theta}}_i,\mathbf{v}_j\rangle,
+\]
+where $\tilde{\boldsymbol{\theta}}_i$ is user $i$'s pre-impression taste vector and $\mathbf{v}_j$ is article $j$'s feature vector. Because cosine similarity is the scale-free analogue of the inner product, the empirical implication is straightforward: articles that are more aligned with current taste should be clicked at higher rates.
+
+The first check is deliberately nonparametric. For each user--article pair in the working sample, we compute
+\[
+\text{sim}_{ij} = \cos(\tilde{\boldsymbol{\theta}}_i,\mathbf{v}_j)
+\]
+and sort observations into similarity quintiles. Table~\ref{tab:sim_quintile} reports the CTR in each quintile. This table should be read as a monotonicity check: it asks whether the ordering of click probabilities is consistent with the ordering of taste similarity, without imposing a functional form on the relationship.
+
+\begin{table}[ht]
+\centering
+\caption{CTR by cosine-similarity quintile. Higher similarity between user taste and article features predicts higher click-through rates.}
+\label{tab:sim_quintile}
+\begin{tabular}{cccc}
+\toprule
+Sim quintile & Mean similarity & CTR & $N$ \\
+\midrule
+0 (lowest) & 0.000 & 2.86\% & 4,290,400 \\
+1 & 0.070 & 4.18\% & 715,294 \\
+2 & 0.163 & 4.94\% & 715,077 \\
+3 & 0.298 & 5.95\% & 715,185 \\
+4 (highest) & 0.587 & 8.49\% & 714,526 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:sim_quintile} shows a strong monotone pattern. CTR rises from 2.86\% in the lowest similarity quintile to 8.49\% in the highest, nearly a three-fold increase. The lowest quintile has mean similarity 0.000 because the one-hot subcategory representation generates many user--article pairs with no direct category overlap; that feature makes the bottom row especially interpretable as a ``no immediate affinity'' benchmark.
+
+A one-number summary of the same relationship is the point-biserial correlation between $\text{sim}_{ij}$ and the binary click indicator. Because the outcome is binary, this statistic is the natural analogue of a Pearson correlation. Using the subcategory representation, the correlation is $r = 0.095$ ($p < 10^{-300}$); using entity embeddings, it is $r = 0.055$ ($p < 10^{-300}$). The magnitudes are modest, which is expected in high-noise behavioral data, but the sign is stable and the estimates are extremely precise.
+
+A stronger validation exercise treats each impression as a choice set and asks whether similarity helps rank clicked items within that set. For an impression displaying articles $j=1,\ldots,J$, we estimate the multinomial-logit score
+\[
+P(\text{click }j)
+=
+\frac{\exp(\beta\,\text{sim}_{ij})}
+{\sum_{k=1}^{J}\exp(\beta\,\text{sim}_{ik})},
+\]
+where $\beta$ is fitted by maximum likelihood. Table~\ref{tab:auc} reports out-of-sample AUC on 100,000 held-out impressions. AUC can be read as the probability that the scoring rule ranks a clicked article above a non-clicked alternative drawn from the same evaluation distribution.
+
+\begin{table}[ht]
+\centering
+\caption{Click prediction accuracy (AUC) by predictor. The MNL uses only similarity constructed from subcategory-based article features.}
+\label{tab:auc}
+\begin{tabular}{lc}
+\toprule
+Predictor & AUC \\
+\midrule
+Subcategory cosine similarity & 0.613 \\
+Entity cosine similarity & 0.576 \\
+Combined & 0.618 \\
+MNL (subcategory features only) & \textbf{0.707} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:auc} shows that even this very sparse representation of taste contains substantial predictive information. The multinomial-logit specification achieves an AUC of 0.707 using only subcategory-based similarity. In practical terms, the model ranks clicked content above non-clicked alternatives about 70.7\% of the time, despite using no article text, no recency variables, and no position controls. This does not prove that utility is literally one-dimensional or fully captured by an inner product. What it does show is that the inner-product representation is a disciplined reduced form with real empirical bite. The controlled regressions in Section~\ref{sec:regression} reinforce that conclusion by showing that historical taste continues to matter even after conditioning on what the algorithm actually displayed.
+
+%======================================================================
+\section{Taste Dynamics}
+\label{sec:taste}
+%======================================================================
+
+Section~\ref{sec:utility} established that estimated taste predicts current clicks. The next question is dynamic: does realized consumption change subsequent taste, or does the platform merely reveal an already fixed preference state? This section answers that question in three steps. We start with short-run category persistence, then move to a three-period design that isolates baseline, intermediate, and future taste, and finally estimate a regression that conditions on the platform's assortment.
+
+\subsection{Self-reinforcement}
+
+Article titles turn over quickly in a news environment, so an article-level repeat-click measure would confound stable taste with content turnover. A cleaner first test asks whether \emph{categories} become more likely to be clicked again after they have just been clicked. We split each user's activity into daily sessions and, for each category $c$, compare the probability of clicking $c$ in session $t+1$ after the user did versus did not click $c$ in session $t$. The percentage lift is
+\[
+\text{Lift}_c =
+\frac{
+P(c\text{ clicked at }t{+}1 \mid c\text{ clicked at }t)
+-
+P(c\text{ clicked at }t{+}1 \mid c\text{ not clicked at }t)
+}{
+P(c\text{ clicked at }t{+}1 \mid c\text{ not clicked at }t)
+}.
+\]
+
+A positive value means that a category becomes more behaviorally salient immediately after it is consumed. Table~\ref{tab:selfreinforcement} reports these transition statistics category by category.
+
+\begin{table}[ht]
+\centering
+\caption{Session-level self-reinforcement by category. Lift measures the percentage increase in next-session click probability after clicking a category versus not clicking it.}
+\label{tab:selfreinforcement}
+\small
+\begin{tabular}{lcccr}
+\toprule
+Category & $P(\text{next} \mid \text{click})$ & $P(\text{next} \mid \text{no click})$ & Lift & $p$-value \\
+\midrule
+autos & 0.127 & 0.023 & $+448\%$ & $< 10^{-300}$ \\
+video & 0.068 & 0.019 & $+254\%$ & $< 10^{-300}$ \\
+foodanddrink & 0.118 & 0.036 & $+232\%$ & $< 10^{-300}$ \\
+weather & 0.061 & 0.024 & $+154\%$ & $< 10^{-143}$ \\
+health & 0.080 & 0.034 & $+132\%$ & $< 10^{-300}$ \\
+travel & 0.058 & 0.026 & $+127\%$ & $< 10^{-234}$ \\
+entertainment & 0.077 & 0.035 & $+122\%$ & $< 10^{-300}$ \\
+movies & 0.031 & 0.014 & $+123\%$ & $< 10^{-71}$ \\
+sports & 0.243 & 0.113 & $+114\%$ & $< 10^{-300}$ \\
+lifestyle & 0.193 & 0.105 & $+84\%$ & $< 10^{-300}$ \\
+tv & 0.068 & 0.044 & $+53\%$ & $< 10^{-129}$ \\
+finance & 0.116 & 0.080 & $+45\%$ & $< 10^{-184}$ \\
+news & 0.353 & 0.245 & $+44\%$ & $< 10^{-300}$ \\
+music & 0.077 & 0.060 & $+29\%$ & $< 10^{-54}$ \\
+\midrule
+\textbf{Overall} & \textbf{0.184} & \textbf{0.054} & $\boldsymbol{+243\%}$ & $< 10^{-300}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:selfreinforcement} shows positive reinforcement in every category. The overall lift is $+243\%$, meaning that the probability of returning to a category in the next session is about 3.4 times as large after a click as after a non-click. The heterogeneity across rows is also informative. Categories such as autos and video exhibit large proportional lifts because their baseline re-click probabilities are small; a modest absolute increase therefore translates into a large percentage increase. Broad categories such as news and sports have smaller proportional lifts but still large absolute differences. The key point is not only that tastes are persistent, but that recently consumed topics become \emph{temporarily more likely} to be revisited. That is exactly the local updating force assumed in many dynamic recommendation models.
+
+\subsection{Three-period taste shift}
+\label{sec:three_period}
+
+The session analysis is intentionally local. To study whether taste drifts over a longer horizon, we return to the three-period design from Section~\ref{sec:three_period_design}. For each user $i$, define the net period-level taste change
+\[
+\Delta\boldsymbol{\theta}_i
+=
+\boldsymbol{\theta}_i^{(\mathrm{P3})}
+-
+\boldsymbol{\theta}_i^{(\mathrm{P1})}.
+\]
+We then compare this future taste change with the content the user actually consumed in the intermediate period. The central idea is simple: if P2 consumption is state-changing, then the direction of $\Delta\boldsymbol{\theta}_i$ should line up with the direction of the P2 consumption vector.
+
+For compactness, let
+\[
+\Delta\boldsymbol{\theta}_i^{12}
+=
+\boldsymbol{\theta}_i^{(\mathrm{P2})}
+-
+\boldsymbol{\theta}_i^{(\mathrm{P1})},
+\qquad
+\Delta\boldsymbol{\theta}_i^{13}
+=
+\boldsymbol{\theta}_i^{(\mathrm{P3})}
+-
+\boldsymbol{\theta}_i^{(\mathrm{P1})},
+\]
+and let $\mathbf{c}_i^{(\mathrm{P}t)}$ denote the category-share vector formed from user $i$'s clicked content in period $t$. Because the vectors are normalized shares, cosine similarity is best interpreted as a directional comparison: positive values mean taste moved \emph{toward} the clicked mix, values near zero mean no systematic directional relation, and negative values mean movement away.
+
+Table~\ref{tab:taste_alignment} reports three alignment tests for the 143,574 users with at least two clicks in each period. The first row is a placebo that compares an earlier taste change with still earlier consumption. The second row is the main test that compares future taste change with P2 consumption. The third row pools P1 and P2 consumption to summarize alignment with the user's recent click history more broadly.
+
+\begin{table}[ht]
+\centering
+\caption{Cosine alignment between taste-change vectors and consumption vectors. Future taste change aligns strongly with intermediate-period consumption.}
+\label{tab:taste_alignment}
+\begin{tabular}{lccc}
+\toprule
+Alignment test & Mean $\cos$ & $t$-stat & $p$-value \\
+\midrule
+Placebo: $\cos(\Delta\boldsymbol{\theta}^{12}, \mathbf{c}^{(\mathrm{P1})})$ & $-0.008$ & $-8.1$ & $4 \times 10^{-16}$ \\
+Main: $\cos(\Delta\boldsymbol{\theta}^{13}, \mathbf{c}^{(\mathrm{P2})})$ & $\boldsymbol{+0.360}$ & $\boldsymbol{429}$ & $\boldsymbol{< 10^{-300}}$ \\
+Pooled: $\cos(\Delta\boldsymbol{\theta}^{13}, \mathbf{c}^{(\mathrm{P1})}{+}\mathbf{c}^{(\mathrm{P2})})$ & $+0.397$ & $501$ & $< 10^{-300}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:taste_alignment} is the core dynamic result in the report. The placebo alignment is near zero and slightly negative, whereas the main alignment with P2 consumption is strongly positive at $+0.360$. That contrast is exactly what we would hope to see if taste drift tracks realized intermediate-period consumption rather than mechanical time trends. The pooled P1+P2 row is slightly larger still, which is consistent with the idea that recent consumption cumulates.
+
+The permutation test strengthens that interpretation. Under 1,000 random shuffles, the null mean is essentially zero, while the observed statistic implies a $z$-score of 515. Put differently, the realized alignment is far outside what would arise from randomly reassigning users' intermediate-period consumption vectors. In the shorter 7-day MINDsmall window, the same statistic is $-0.012$ and statistically insignificant. That comparison is useful rather than troubling: it suggests that taste updates are real but small enough that they become visible only when enough time has elapsed for them to accumulate.
+
+\paragraph{Entropy and the filter-bubble question.}
+A natural concern is that self-reinforcement could imply narrowing into a progressively tighter interest set. To test that directly, we measure taste concentration using Shannon entropy,
+\[
+H(\boldsymbol{\theta}_i) = -\sum_k \theta_{i,k}\log_2 \theta_{i,k}.
+\]
+Higher entropy means a more dispersed mix of interests; lower entropy means concentration in fewer categories. Table~\ref{tab:entropy} tracks entropy across the three periods.
+
+\begin{table}[ht]
+\centering
+\caption{Entropy trajectory across periods. Most users diversify; only 9.3\% are more focused in P3 than in P1.}
+\label{tab:entropy}
+\begin{tabular}{lcccc}
+\toprule
+Period & Mean entropy & $\Delta$ from P1 & $t$-stat & More focused \\
+\midrule
+P1 (Nov 9--11) & 1.352 bits & --- & --- & --- \\
+P2 (Nov 12--15) & 1.590 bits & $+0.238$ & $116$ & 34.1\% \\
+P3 (Nov 16--22) & 2.047 bits & $+0.678$ & $474$ & 9.3\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:entropy} shows that local reinforcement does \emph{not} mechanically imply global narrowing. Mean entropy rises from 1.352 bits in P1 to 2.047 bits in P3, and only 9.3\% of users are more concentrated in P3 than in P1. The right way to read this result is that two forces coexist: users become more likely to revisit categories they recently consumed, but the set of categories they touch can still broaden over time. A model that allowed only persistence or only diversification would therefore miss an important empirical feature of the data.
+
+\paragraph{Where does the new mass go?}
+Entropy tells us whether the distribution broadens, but not which categories receive the new mass. To answer that question, Table~\ref{tab:transition} reports a transition matrix from each user's dominant P1 category to the distribution of P3 clicks across categories. Rows therefore describe starting points; columns describe where later attention ends up.
+
+\begin{table}[ht]
+\centering
+\caption{Transition matrix: P1 dominant category $\to$ P3 click distribution (143,574 users). Diagonal entries (bold) show self-reinforcement. Row sums $< 1$ because 5 minor categories are omitted from columns.}
+\label{tab:transition}
+\small
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{l|cccccccccc}
+\toprule
+& news & sports & fin. & life. & health & trav. & food & autos & ent. & video \\
+\midrule
+news & \textbf{.46} & .12 & .07 & .08 & .03 & .03 & .03 & .02 & .02 & .02 \\
+sports & .17 & \textbf{.44} & .06 & .06 & .02 & .03 & .03 & .02 & .02 & .01 \\
+finance & .23 & .12 & \textbf{.26} & .10 & .04 & .03 & .04 & .02 & .02 & .02 \\
+lifestyle & .20 & .08 & .05 & \textbf{.33} & .04 & .03 & .04 & .01 & .04 & .02 \\
+health & .19 & .09 & .06 & .13 & \textbf{.24} & .03 & .04 & .02 & .03 & .02 \\
+travel & .16 & .08 & .07 & .10 & .04 & \textbf{.28} & .04 & .03 & .03 & .02 \\
+food & .18 & .08 & .06 & .13 & .05 & .04 & \textbf{.26} & .02 & .03 & .01 \\
+autos & .19 & .11 & .08 & .08 & .04 & .04 & .04 & \textbf{.26} & .03 & .02 \\
+ent. & .18 & .09 & .06 & .13 & .05 & .03 & .04 & .01 & \textbf{.21} & .02 \\
+video & .20 & .06 & .05 & .10 & .03 & .03 & .03 & .02 & .02 & \textbf{.35} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:transition} shows both persistence and directed cross-category drift. The diagonal entries are the self-reinforcement terms and are largest for broad categories such as news and sports. The off-diagonal structure is not diffuse: many starting categories feed disproportionately into news and sports, while much smaller flows move toward categories such as travel or autos. This matters for theory because it implies that a category-transition kernel cannot be treated as symmetric or exchangeable across categories.
+
+\subsection{Controlled regression}
+\label{sec:regression}
+
+The previous results all suggest that historical taste matters. A remaining identification concern, however, is that users can only click what the platform chooses to show. To separate latent preference from assortment composition, we estimate the user-category regression
+\[
+\text{click\_frac}_{u,c}
+=
+\beta_0
++
+\beta_1\,\text{hist\_frac}_{u,c}
++
+\beta_2\,\text{shown\_frac}_{u,c}
++
+\varepsilon_{u,c},
+\]
+where $\text{click\_frac}_{u,c}$ is user $u$'s realized click share in category $c$, $\text{hist\_frac}_{u,c}$ is the user's historical taste share in that category, and $\text{shown\_frac}_{u,c}$ is the share of displayed articles in that category. The observation is therefore a \emph{user-category pair}. The coefficient of primary interest is $\beta_1$: it measures whether history predicts future click allocation after holding fixed what the algorithm displayed.
+
+Table~\ref{tab:controlled_reg} reports the estimates for both MINDsmall and MINDlarge.
+
+\begin{table}[ht]
+\centering
+\caption{Controlled regression of click fraction on historical taste and algorithmic assortment. Historical taste retains a large autonomous effect on both datasets.}
+\label{tab:controlled_reg}
+\begin{tabular}{lcccccc}
+\toprule
+ & \multicolumn{3}{c}{MINDsmall} & \multicolumn{3}{c}{MINDlarge} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+Variable & Coef & $t$ & $p$ & Coef & $t$ & $p$ \\
+\midrule
+Intercept & $-0.008$ & $-32$ & $\approx 0$ & $-0.007$ & $-93$ & $\approx 0$ \\
+hist\_frac & $0.406$ & $217$ & $\approx 0$ & $0.390$ & $722$ & $\approx 0$ \\
+shown\_frac & $0.698$ & $244$ & $\approx 0$ & $0.695$ & $838$ & $\approx 0$ \\
+\midrule
+$N$ & \multicolumn{3}{c}{463,732} & \multicolumn{3}{c}{4,958,784} \\
+$R^2$ & \multicolumn{3}{c}{0.382} & \multicolumn{3}{c}{0.411} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:controlled_reg} shows that historical taste retains a large autonomous association with future click allocation even after we condition on the displayed assortment. The coefficient on $\text{hist\_frac}$ is about 0.40 in both datasets. On the MINDlarge estimates, that means a 10 percentage point increase in historical category share is associated with roughly a 3.9 percentage point increase in subsequent click share in the same category, holding fixed the share of displayed items in that category. The shown-share coefficient is larger, which is natural because displayed content mechanically constrains what can be clicked. The important point is that history remains strongly predictive after this control, so taste is not merely a relabeling of exposure.
+
+%======================================================================
+\section{Local Persuasion}
+\label{sec:persuasion}
+%======================================================================
+
+The next question is how far recommendation can reach in one step. A persuasive system need not move users arbitrarily far in taste space; it may only be able to move them through content that is already fairly close to what they currently like. We capture mismatch between user $i$ and article $j$ by cosine distance,
+\[
+d_{ij} = 1 - \cos(\tilde{\boldsymbol{\theta}}_i,\mathbf{v}_j),
+\]
+so $d_{ij}=0$ means perfect alignment and larger values mean the article lies farther from current taste.
+
+Table~\ref{tab:persuasion_radius} relates this distance to article-level CTR. The table is best read as a reduced-form ``persuasion radius'' diagnostic: it shows how quickly engagement probability decays as recommended content moves away from the user's current interests.
+
+\begin{table}[ht]
+\centering
+\caption{CTR by cosine-distance bin. Click probability decays $3.4\times$ from the nearest to the farthest articles.}
+\label{tab:persuasion_radius}
+\begin{tabular}{cccc}
+\toprule
+Dist bin & Mean distance & CTR & $N$ \\
+\midrule
+0 (nearest) & 0.294 & \textbf{9.75\%} & 362,241 \\
+1 & 0.535 & 7.19\% & 353,337 \\
+2 & 0.659 & 6.27\% & 357,084 \\
+3 & 0.745 & 5.63\% & 358,224 \\
+4 & 0.811 & 5.10\% & 359,127 \\
+5 & 0.863 & 4.76\% & 357,303 \\
+6 & 0.908 & 4.32\% & 356,404 \\
+7 & 0.952 & 4.04\% & 356,635 \\
+8 (farthest) & 1.000 & \textbf{2.86\%} & 4,290,127 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:persuasion_radius} shows a sharp decline in engagement with distance. CTR falls from 9.75\% in the nearest bin to 2.86\% in the farthest, a 3.4-fold drop. This pattern strongly suggests that recommendation is \emph{locally persuasive} rather than globally transformative: content that is too far from current taste is simply hard to convert into clicks.
+
+For operational interpretation, the table reports two descriptive cutoffs rather than one purportedly structural threshold. A generous rule (CTR stays at least 50\% of its peak) implies an effective radius of $d \le 0.811$. A stricter rule (CTR remains at least twice the farthest-bin rate) implies $d \le 0.659$. The exact numerical threshold is therefore not unique, and it should not be over-interpreted as a primitive parameter. What matters is the qualitative result shared by both rules: engagement probability falls off enough with distance that recommendation must largely work through local moves.
+
+%======================================================================
+\section{The Exploitation--Exploration Tradeoff}
+\label{sec:tradeoff}
+%======================================================================
+
+Once local persuasion is established, a natural optimization question follows. Content that sits close to current taste is easier to click, but a click on already-familiar content may reveal little new information and may generate only a small taste update. By contrast, distant content is less likely to be clicked, but if it \emph{is} clicked it may move taste more substantially. This is the exploitation--exploration tradeoff in dynamic recommendation.
+
+To quantify the tradeoff, we study 72,526 pairs of consecutive daily sessions. For each pair we compute three objects. First, \emph{click distance} is the mean cosine distance between the user's current taste and the articles clicked in session $t$. Second, the \emph{size of the taste update} is
+\[
+\|\Delta\tilde{\boldsymbol{\theta}}\|
+=
+\left\|
+\tilde{\boldsymbol{\theta}}^{(t+1)}
+-
+\tilde{\boldsymbol{\theta}}^{(t)}
+\right\|.
+\]
+Third, the \emph{reinforcement statistic} is
+\[
+\Delta\cos(\tilde{\boldsymbol{\theta}},\mathbf{c})
+=
+\cos\!\left(\tilde{\boldsymbol{\theta}}^{(t+1)},\mathbf{c}^{(t)}\right)
+-
+\cos\!\left(\tilde{\boldsymbol{\theta}}^{(t)},\mathbf{c}^{(t)}\right),
+\]
+where $\mathbf{c}^{(t)}$ is the mean feature vector of the session-$t$ clicks. Positive values mean the next-session taste vector moved closer to the clicked bundle; more negative values mean it remained farther away. Table~\ref{tab:movement} bins these quantities by click distance and also reports the similarity between current and next-session taste, $\cos(\tilde{\boldsymbol{\theta}}^{(t+1)},\tilde{\boldsymbol{\theta}}^{(t)})$.
+
+\begin{table}[ht]
+\centering
+\caption{Taste movement by click distance. The table reports how session-to-session taste updates vary with the novelty of the clicked bundle; the cross-bin correlation between click distance and the reinforcement statistic is $r = 0.528$.}
+\label{tab:movement}
+\small
+\begin{tabular}{rcccrr}
+\toprule
+Bin & Mean $d$ & $\|\Delta\tilde{\theta}\|$ & $\Delta\cos(\tilde{\theta},c)$ & $\cos(\tilde{\theta}^{t+1},\tilde{\theta}^{t})$ & $N$ \\
+\midrule
+0 & 0.336 & 0.979 & $-0.425$ & 0.292 & 7,253 \\
+1 & 0.591 & 0.964 & $-0.316$ & 0.235 & 7,290 \\
+2 & 0.692 & 0.937 & $-0.271$ & 0.201 & 7,216 \\
+3 & 0.761 & 0.930 & $-0.218$ & 0.172 & 7,252 \\
+4 & 0.817 & 0.937 & $-0.165$ & 0.144 & 7,353 \\
+5 & 0.868 & 0.951 & $-0.106$ & 0.117 & 7,153 \\
+6 & 0.923 & 0.966 & $-0.042$ & 0.084 & 7,255 \\
+7 & 0.998 & 1.201 & $+0.044$ & 0.047 & 21,754 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+The economically important pattern in Table~\ref{tab:movement} is the \emph{cross-bin trend}. As click distance rises, the reinforcement statistic becomes steadily less negative and eventually turns positive in the farthest bin, while the current-to-next-session similarity falls. In other words, distant clicks are rarer, but when they occur they are associated with larger subsequent movement in taste. The negative reinforcement levels in the close bins are not contradictory: when users click content that is already very close to their current taste, there is simply less room for the next-period taste vector to move even closer. What matters for the tradeoff is the monotone comparative static, not the level in any one bin.
+
+A convenient summary is the reported correlation of $r = 0.528$ between click distance and reinforcement. Writing $w(d)$ for the expected state update generated by a click at distance $d$, the table suggests that $w(d)$ is increasing in $d$. The platform therefore faces a genuine frontier: nearby content is easier to convert into clicks, but farther content is more state-changing conditional on being clicked.
+
+%======================================================================
+\section{Assortment Effects}
+\label{sec:assortment}
+%======================================================================
+
+Sections~\ref{sec:utility} through \ref{sec:tradeoff} treated the user's state as the main driver of behavior. The platform's assortment also matters directly, so the next step is to ask whether assortment effects are approximately separable across categories or whether categories compete with and complement one another in the recommendation slate.
+
+\subsection{Within-category substitution}
+
+We begin with within-category substitution. If showing more articles from the same category mechanically cannibalizes per-article click probability, then the platform faces diminishing returns within that category even before it worries about cross-category interactions.
+
+For each impression, let $N_c$ be the number of displayed articles in category $c$. We first compute raw per-article CTR as a function of $N_c$. We then compute a partial correlation between $N_c$ and category-$c$ per-article CTR after controlling for the user's historical taste share $\text{hist\_frac}_{u,c}$. This control matters: without it, a negative raw slope could simply reflect the fact that the algorithm shows more items from category $c$ precisely when the marginal user is a weaker match. Table~\ref{tab:substitution} reports both the raw CTR pattern and the partial-correlation diagnosis.
+
+\begin{table}[ht]
+\centering
+\caption{Within-category substitution test. Per-article CTR by the number of same-category articles shown. Only news shows significant substitution ($r < 0$, $p < 0.05$).}
+\label{tab:substitution}
+\small
+\begin{tabular}{lccccc}
+\toprule
+Category & $N{=}1$ CTR & $N{=}2$ CTR & $N{=}3$ CTR & $N{\geq}4$ CTR & Substitution? \\
+\midrule
+autos & 4.20\% & 3.78\% & 3.02\% & 2.26\% & No ($r{=}0.16$) \\
+entertainment & 6.36\% & 4.07\% & 3.33\% & 2.33\% & No ($r{=}0.09$) \\
+finance & 8.75\% & 6.98\% & 4.93\% & 2.87\% & No ($r{=}0.07$) \\
+foodanddrink & 5.54\% & 4.48\% & 3.82\% & 2.70\% & No ($r{=}0.17$) \\
+health & 5.44\% & 4.74\% & 4.28\% & 3.31\% & No ($r{=}0.19$) \\
+kids & 1.61\% & 0.00\% & 0.00\% & --- & No \\
+lifestyle & 9.54\% & 8.29\% & 6.63\% & 3.92\% & No ($r{=}0.11$) \\
+movies & 5.69\% & 3.33\% & 2.72\% & 2.10\% & No ($r{=}0.05$) \\
+music & 11.50\% & 5.11\% & 3.78\% & 3.03\% & No ($r{=}0.00$) \\
+\textbf{news} & \textbf{21.5\%} & \textbf{15.6\%} & \textbf{12.2\%} & \textbf{5.11\%} & \textbf{YES} ($r{=}{-}0.02$) \\
+sports & 10.28\% & 8.98\% & 7.46\% & 4.51\% & No ($r{=}0.13$) \\
+travel & 6.02\% & 3.58\% & 3.07\% & 2.02\% & No ($r{=}0.10$) \\
+tv & 8.47\% & 6.87\% & 5.34\% & 3.90\% & No ($r{=}0.09$) \\
+video & 5.48\% & 5.00\% & 4.26\% & 3.19\% & No ($r{=}0.13$) \\
+weather & 4.78\% & 2.92\% & 2.70\% & 2.42\% & No ($r{=}0.04$) \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:substitution} is a good example of why raw slopes can be misleading in recommender data. The raw CTR columns decline almost everywhere, which at first glance looks like saturation. But once we condition on historical taste, the partial correlations are positive in nearly every category. The economically relevant interpretation is that categories receive larger within-category slates when the platform is reaching further down the demand curve, not that same-category items strongly cannibalize one another. News is the only category with a negative partial correlation, and even there the effect is quite small.
+
+\subsection{Cross-category spillover}
+
+Within-category substitution is only part of the assortment problem. Categories may also interact with one another. If showing more of category $X$ systematically raises or lowers click performance in category $Y$, then categories cannot be optimized independently.
+
+Table~\ref{tab:spillover} reports Spearman correlations between the number of articles shown in a \emph{row} category and the per-article CTR of a \emph{column} category. The matrix is therefore directional by construction: the entry in row ``sports'' and column ``news'' is not the same object as the entry in row ``news'' and column ``sports''.
+
+\begin{table}[ht]
+\centering
+\caption{Cross-category spillover matrix. Spearman correlations between the number of articles shown in the row category and per-article CTR in the column category.}
+\label{tab:spillover}
+\small
+\begin{tabular}{r|cccccc}
+\toprule
+& news & sports & finance & lifestyle & health & entertain. \\
+\midrule
+news & $0.016^*$ & $-0.107^*$ & $-0.024^*$ & $-0.021^*$ & $0.045^*$ & $-0.027^*$ \\
+sports & $-0.134^*$ & $0.143^*$ & $-0.037^*$ & $-0.027^*$ & $0.026^*$ & $-0.039^*$ \\
+finance & $-0.116^*$ & $-0.036^*$ & $0.090^*$ & $0.013^*$ & $0.062^*$ & $-0.017^*$ \\
+lifestyle & $-0.148^*$ & $-0.065^*$ & $-0.043^*$ & $0.116^*$ & $0.087^*$ & $-0.004$ \\
+health & $-0.116^*$ & $-0.080^*$ & $-0.023^*$ & $0.020^*$ & $0.186^*$ & $-0.020^*$ \\
+entertain. & $-0.098^*$ & $-0.070^*$ & $-0.036^*$ & $0.026^*$ & $0.059^*$ & $0.091^*$ \\
+\bottomrule
+\end{tabular}
+
+{\footnotesize $^*p < 0.05$. Diagonal = own-category effect. Positive off-diagonal = complementarity; negative = crowding out.}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:spillover} shows that cross-category dependence is empirically present and sometimes directional. The diagonal entries are all positive, consistent with own-category demand concentration. The off-diagonal entries reveal both crowding out and complementarity. News and sports are the clearest competitors, while health and lifestyle display positive association. These correlations are descriptive rather than causal, but they matter because they show that the recommendation problem is not simply a collection of independent one-category allocation problems.
+
+%======================================================================
+\section{Exposure versus Engagement}
+\label{sec:exposure}
+%======================================================================
+
+The previous sections established that tastes track realized consumption. The central remaining mechanism question is \emph{why}. Does being shown content move future taste even when the user does not click, or is the state-changing channel specifically engagement with shown content? The answer matters directly for platform design: optimizing impressions is a different problem from optimizing clicked impressions.
+
+\subsection{Aggregate and decomposed regressions}
+
+We start with stacked user-category regressions. For each user--category pair $(u,c)$, let $\text{P3\_frac}_{u,c}$ be the fraction of user $u$'s P3 clicks in category $c$, $\text{P1\_frac}_{u,c}$ the corresponding baseline fraction from P1, $\text{P2\_click\_frac}_{u,c}$ the fraction of the user's P2 clicks in category $c$, and $\text{P2\_shown\_frac}_{u,c}$ the fraction of P2 displayed articles allocated to category $c$. The baseline specification is
+\[
+\text{P3\_frac}_{u,c}
+=
+\beta_0
++
+\beta_1\,\text{P1\_frac}_{u,c}
++
+\beta_2\,\text{P2\_click\_frac}_{u,c}
++
+\beta_3\,\text{P2\_shown\_frac}_{u,c}
++
+\varepsilon_{u,c},
+\]
+with standard errors clustered at the user level. Because all regressors and the dependent variable are category shares on the same $[0,1]$ scale, coefficient magnitudes are directly comparable as descriptive predictive associations.
+
+Table~\ref{tab:stacked_ols} reports the estimates.
+
+\begin{table}[ht]
+\centering
+\caption{Stacked OLS for future taste shares. The dependent variable is the P3 category share; regressors are baseline taste, P2 click share, and P2 shown share. Consumption is far more predictive than raw exposure.}
+\label{tab:stacked_ols}
+\begin{tabular}{lcccc}
+\toprule
+Variable & Coef & SE (clustered) & $t$ & $p$ \\
+\midrule
+Intercept & $0.001$ & $0.000$ & $28$ & $\approx 0$ \\
+P1 taste ($\beta_1$) & $0.407$ & $0.001$ & $802$ & $\approx 0$ \\
+P2 clicks ($\beta_2$) & $0.521$ & $0.001$ & $945$ & $\approx 0$ \\
+P2 shown ($\beta_3$) & $0.059$ & $0.001$ & $89$ & $\approx 0$ \\
+\midrule
+$N$ & \multicolumn{4}{c}{1,852,089 (user$\times$category)} \\
+Clusters & \multicolumn{4}{c}{145,985 users} \\
+$R^2$ & \multicolumn{4}{c}{0.949} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:stacked_ols} delivers three immediate messages. First, preferences are persistent: the baseline taste share enters with coefficient 0.407. Second, intermediate-period consumption is the strongest predictor of future taste, with coefficient 0.521. Third, the overall exposure share is positive but much smaller, at 0.059. This pattern already suggests that consumption matters far more than raw impression volume, but the aggregate exposure variable still mixes together articles that were shown and clicked with articles that were shown and ignored.
+
+To separate those channels, we decompose the P2 shown share into two mutually exclusive components: the share of displayed content in category $c$ that was shown \emph{and clicked}, and the share that was shown \emph{but not clicked}. By construction, these two shares sum to the overall shown share. Table~\ref{tab:decomposed_ols} reports the corresponding regression.
+
+\begin{table}[ht]
+\centering
+\caption{Decomposed OLS for future taste shares. The P2 shown share is decomposed into its clicked and non-clicked components.}
+\label{tab:decomposed_ols}
+\begin{tabular}{lcccc}
+\toprule
+Variable & Coef & SE (clust) & $t$ & $p$ \\
+\midrule
+Intercept & $0.001$ & $<0.001$ & $27.4$ & $\approx 0$ \\
+P1 taste ($\beta_1$) & $0.412$ & $0.001$ & $804$ & $\approx 0$ \\
+Shown + clicked ($\beta_2$) & $\mathbf{0.509}$ & $0.001$ & $998$ & $\approx 0$ \\
+Shown + NOT clicked ($\beta_3$) & $\mathbf{0.067}$ & $0.001$ & $104$ & $\approx 0$ \\
+\midrule
+\multicolumn{5}{l}{$N = 1{,}852{,}089$ \quad Clusters $= 145{,}985$ \quad $R^2 = 0.940$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:decomposed_ols} makes the asymmetry much clearer. The coefficient on shown-and-clicked content is 0.509, whereas the coefficient on shown-but-not-clicked content is only 0.067. This does \emph{not} yet prove that ignored exposure is beneficial, because the regression is still a predictive share decomposition and therefore mixes directional movement with compositional constraints. To learn whether ignored exposure pulls taste toward or away from a category, we need a directional statistic rather than a predictive coefficient. That is the purpose of the next subsection.
+
+\subsection{Direction of taste shift}
+
+The most transparent directional statistic is cosine alignment between the P1-to-P3 taste shift
+\[
+\Delta\boldsymbol{\theta}_i
+=
+\boldsymbol{\theta}_i^{(\mathrm{P3})}
+-
+\boldsymbol{\theta}_i^{(\mathrm{P1})}
+\]
+and alternative P2 vectors. We compare four such vectors: the full shown mix, the clicked mix, the shown-and-clicked component, and the shown-but-not-clicked component. A positive cosine means the taste shift points toward that vector; a negative cosine means the shift points away from it. Table~\ref{tab:cosine_alignment} reports the results.
+
+\begin{table}[ht]
+\centering
+\caption{Cosine alignment of taste shift ($\Delta\boldsymbol{\theta}_i$) with four P2 vectors. Taste moves toward clicks and away from non-clicked exposure.}
+\label{tab:cosine_alignment}
+\begin{tabular}{lcccc}
+\toprule
+Alignment target & Mean $\cos$ & $t$ & $p$ & Cohen's $d$ \\
+\midrule
+P2 shown (all) & $+0.026$ & $36$ & $< 10^{-284}$ & $0.095$ \\
+P2 clicks & $+0.375$ & $433$ & $\approx 0$ & $1.141$ \\
+P2 shown + clicked & $+0.372$ & $427$ & $\approx 0$ & $1.125$ \\
+P2 shown + NOT clicked & $\mathbf{-0.015}$ & $-21$ & $< 10^{-98}$ & $-0.056$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:cosine_alignment} is cleaner than the regression output because it directly measures direction. Taste shifts strongly toward clicked content and slightly but significantly away from ignored exposure. The small positive cosine for the overall shown mix is therefore an average of two offsetting forces: a large positive clicked component and a small negative ignored component. This is the key conceptual distinction in the report. The mechanism is not ``exposure'' in the undifferentiated sense. It is exposure that succeeds in generating engagement.
+
+\subsection{Shown but not clicked: the backfire}
+\label{sec:shown_not_clicked}
+
+A sharper design isolates categories that were shown in P2 but never clicked. If mere exposure has persuasive power, then those categories should still gain future taste share relative to categories that were never shown. For each user $u$ and category $c$, define the taste-share change
+\[
+\Delta_{u,c} = \text{P3\_frac}_{u,c} - \text{P1\_frac}_{u,c}.
+\]
+Treatment categories satisfy $\text{P2 shown}>0$ and $\text{P2 clicks}=0$, while control categories satisfy $\text{P2 shown}=0$ and $\text{P2 clicks}=0$. Both groups are therefore unclicked in P2; they differ only in whether the user was exposed to them. Table~\ref{tab:backfire} reports both the pooled comparison and the within-user paired comparison that treats the same user's never-shown categories as the benchmark.
+
+\begin{table}[ht]
+\centering
+\caption{Shown-but-not-clicked versus control categories. Treatment categories were shown in P2 but never clicked; control categories were neither shown nor clicked. Ignored exposure is associated with a more negative subsequent taste change than no exposure.}
+\label{tab:backfire}
+\begin{tabular}{lcccc}
+\toprule
+ & Treatment & Control & Difference & $t$-stat \\
+\midrule
+Mean $\Delta$ & $-0.024$ & $-0.006$ & $-0.018$ & $-138$ \\
+\midrule
+\multicolumn{5}{l}{\textit{Within-user paired comparison (primary test):}} \\
+Users with both groups & \multicolumn{4}{c}{145,742} \\
+Mean paired diff & \multicolumn{4}{c}{$-0.021$ ($t = -287$, $p \approx 0$, Cohen's $d = -0.75$)} \\
+Permutation $z$-score & \multicolumn{4}{c}{$-235$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:backfire} is the clearest ``backfire'' result in the report. Both treatment and control categories lose share on average because category shares are compositional and must sum to one, but the loss is substantially larger for categories that were shown and ignored. The within-user paired comparison is especially informative because it removes cross-user composition differences: for the same user, ignored categories decline relative to never-shown categories by 0.021 on average, with a large standardized effect size. The permutation result confirms that this contrast is far too large to be explained by arbitrary relabeling of categories.
+
+\subsection{Three-way decomposition}
+
+The previous comparison isolates ignored exposure against a neutral benchmark. To complete the picture, Table~\ref{tab:threeway} partitions all user-category pairs into three mutually exclusive groups: clicked, shown-but-not-clicked, and neither shown nor clicked.
+
+\begin{table}[ht]
+\centering
+\caption{Three-way decomposition of taste shift ($\Delta_{u,c}$) by exposure group. Shown-not-clicked categories decline four times as much as never-shown categories.}
+\label{tab:threeway}
+\begin{tabular}{lcccc}
+\toprule
+Exposure group & $N$ (pairs) & Mean $\Delta$ & $t$ & $p$ \\
+\midrule
+Clicked (shown + clicked) & 578,585 & $+0.056$ & $302$ & $\approx 0$ \\
+Shown but NOT clicked & 1,257,417 & $-0.024$ & $-366$ & $\approx 0$ \\
+Neither shown nor clicked & 353,773 & $-0.006$ & $-101$ & $\approx 0$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+The ordering in Table~\ref{tab:threeway} is stark. Clicked categories gain future share, never-shown categories decline slightly, and shown-but-not-clicked categories decline the most. Because these averages are still affected by cross-user composition, Table~\ref{tab:paired} reports the within-user paired differences across the same three groups.
+
+\begin{table}[ht]
+\centering
+\caption{Within-user paired comparisons across exposure groups. Each row compares the mean $\Delta_{u,c}$ between two groups for the same user.}
+\label{tab:paired}
+\begin{tabular}{lccc}
+\toprule
+Within-user paired difference & Mean & $t$ & Cohen's $d$ \\
+\midrule
+Clicked $-$ Shown-not-clicked & $+0.106$ & $380$ & $0.99$ \\
+Clicked $-$ Neither & $+0.085$ & $341$ & $0.89$ \\
+Shown-not-clicked $-$ Neither & $\mathbf{-0.021}$ & $\mathbf{-287}$ & $\mathbf{-0.75}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:paired} makes the comparison especially transparent. Clicked categories outperform shown-but-not-clicked categories by roughly a full standard deviation, and ignored categories underperform never-shown categories by about three quarters of a standard deviation. The latter contrast is the critical one for mechanism: even after holding the user fixed, ignored exposure is associated with a materially worse future taste trajectory than no exposure at all.
+
+\subsection{Dose-response}
+
+A further question is whether ignored exposure operates only as a binary event or whether it scales with intensity. Among shown-but-not-clicked user-category pairs, we therefore measure the fraction of P2 displayed articles devoted to the ignored category and relate that intensity to subsequent taste change. Table~\ref{tab:doseresponse} groups these observations into quintiles.
+
+\begin{table}[ht]
+\centering
+\caption{Dose-response: taste shift by quintile of ignored exposure. More ignored exposure produces a steeper decline.}
+\label{tab:doseresponse}
+\begin{tabular}{cccc}
+\toprule
+Quintile & Mean shown frac & Mean $\Delta$ & $N$ \\
+\midrule
+1 (lowest) & 0.012 & $-0.008$ & 251,878 \\
+2 & 0.028 & $-0.016$ & 252,086 \\
+3 & 0.045 & $-0.021$ & 250,657 \\
+4 & 0.067 & $-0.026$ & 251,849 \\
+5 (highest) & 0.138 & $\mathbf{-0.049}$ & 250,947 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:doseresponse} shows a monotone dose-response pattern. Categories in the highest ignored-exposure quintile (mean shown fraction 13.8\%) lose about six times as much future taste share as categories in the lowest quintile (mean shown fraction 1.2\%). The linear fit,
+\[
+\Delta = -0.005 - 0.325 \times \text{shown\_frac},
+\]
+with $t=-170.5$, shows that the effect is not merely a treatment-versus-control difference. Repeatedly pushing low-probability content is associated with progressively worse subsequent outcomes for that category.
+
+\subsection{Per-category decomposition}
+
+The pooled backfire result could, in principle, be driven by one or two very large categories. To check that, we compute two category-specific contrasts:
+\[
+\text{Click effect}_c
+=
+\overline{\Delta}_{c,\text{clicked}}
+-
+\overline{\Delta}_{c,\text{neither}},
+\qquad
+\text{Exposure effect}_c
+=
+\overline{\Delta}_{c,\text{shown-not-clicked}}
+-
+\overline{\Delta}_{c,\text{neither}}.
+\]
+Table~\ref{tab:exposure_percat} reports these category-level decompositions.
+
+\begin{table}[ht]
+\centering
+\caption{Per-category decomposition. Click effect: clicked $\Delta$ minus neither $\Delta$. Exposure effect: shown-not-clicked $\Delta$ minus neither $\Delta$.}
+\label{tab:exposure_percat}
+\small
+\begin{tabular}{lccccc}
+\toprule
+Category & Clicked $\Delta$ & Shown-NC $\Delta$ & Neither $\Delta$ & Click eff. & Exposure eff. \\
+\midrule
+news & $+0.021$ & $-0.105$ & $-0.081$ & $+0.102$ & $-0.024$ \\
+sports & $+0.043$ & $-0.045$ & $-0.054$ & $+0.097$ & $+0.009$ \\
+lifestyle & $+0.087$ & $-0.028$ & $-0.011$ & $+0.097$ & $-0.018$ \\
+finance & $+0.078$ & $-0.025$ & $-0.016$ & $+0.094$ & $-0.009$ \\
+weather & $+0.090$ & $-0.004$ & $-0.003$ & $+0.093$ & $-0.001$ \\
+music & $+0.059$ & $-0.038$ & $-0.033$ & $+0.092$ & $-0.004$ \\
+video & $+0.075$ & $-0.006$ & $-0.003$ & $+0.078$ & $-0.003$ \\
+movies & $+0.063$ & $-0.014$ & $-0.010$ & $+0.073$ & $-0.004$ \\
+health & $+0.062$ & $-0.019$ & $-0.009$ & $+0.071$ & $-0.010$ \\
+travel & $+0.060$ & $-0.016$ & $-0.011$ & $+0.070$ & $-0.006$ \\
+entertainment & $+0.058$ & $-0.017$ & $-0.012$ & $+0.069$ & $-0.005$ \\
+foodanddrink & $+0.062$ & $-0.016$ & $-0.006$ & $+0.069$ & $-0.009$ \\
+autos & $+0.063$ & $-0.010$ & $-0.004$ & $+0.067$ & $-0.005$ \\
+tv & $+0.026$ & $-0.049$ & $-0.041$ & $+0.067$ & $-0.008$ \\
+\midrule
+\multicolumn{5}{l}{Categories with negative exposure effect} & 13/14 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:exposure_percat} shows that the sign pattern is highly stable across categories. The click effect is positive in all 14 categories. The exposure effect is negative in 13 of 14 categories; the only exception is sports, where the estimated exposure effect is slightly positive (+0.009) and economically small. That stability matters. The backfire pattern is not an artifact of one dominant category such as news. It is a broad empirical regularity.
+
+\subsection{Magnitude asymmetry}
+
+Average effects can sometimes hide a balanced mixture of positive and negative cases. The final check in this section rules that out. Among the 1.26 million shown-but-not-clicked pairs, 15.6\% experience taste moving away from the exposed category, whereas only 0.005\% move toward it; the remaining 84.4\% show no measurable change. Conditional on a nonzero shift, away movements are 2.3 times larger in magnitude than toward movements (0.153 versus 0.066; $t = 5.9$, $p < 10^{-8}$).
+
+This distributional result is important for interpretation. Ignored exposure is not a weakly positive force that merely happens to be smaller than clicking. In the data, it is typically associated with no change or a negative change. Several mechanisms could generate this reduced-form pattern: sharper revealed preference after a non-click, reduced future exposure by the platform, displacement by categories that \emph{were} clicked, or some regression to the mean because treatment categories begin with larger baseline shares. The present report cannot fully separate those channels. What it can show clearly is the empirical implication relevant for modeling: durable movement in taste tracks engagement, not passive display alone.
+
+% TODO (meeting note): Berlyne's two-factor theory (specific vs. diversive exploration)
+% may provide a psychological micro-foundation for the backfire / exposure result.
+% Consider citing in the structural model or discussion section.
+
+%======================================================================
+\section{Fine Structure of Taste Dynamics}
+\label{sec:fine}
+%======================================================================
+
+The previous sections establish the main comparative-statics of the system. This section documents additional structure that is not necessary for the basic argument but is highly relevant for any richer dynamic model. The recurring theme is that recommendation does not simply raise or lower a scalar taste state. It changes the breadth, persistence, and cross-category composition of users' interests in systematically heterogeneous ways.
+
+\subsection{Diversification, not polarization}
+
+A recurrent concern in discussions of recommender systems is polarization or narrowing. The entropy results in Section~\ref{sec:taste} already showed average diversification, but it is useful to turn that into a user-level classification. We call a user a \emph{broadener} if
+\[
+H\!\left(\boldsymbol{\theta}_i^{(\mathrm{P3})}\right)
+>
+H\!\left(\boldsymbol{\theta}_i^{(\mathrm{P1})}\right)
+\]
+and a \emph{narrower} otherwise. Of 146,477 users, 90.8\% broaden and only 9.2\% narrow. The narrowers begin with substantially higher entropy and lower dominant-category concentration, which suggests that many of them are not entering a filter bubble but rather moving from an unusually diffuse starting profile toward a more defined core. The data therefore point to diversification on average, not polarization.
+
+\subsection{Satiation curves}
+
+The next question is whether reinforcement eventually saturates. For each category $c$, let $k$ denote the number of consecutive prior sessions in which $c$ was clicked. We then ask how the probability of clicking $c$ in the next session varies with $k$. If repeated engagement produces satiation, this continuation probability should flatten or decline. If reinforcement compounds, it should keep rising. Table~\ref{tab:satiation} reports the continuation probabilities for the observed dosage bins.
+
+\begin{table}[ht]
+\centering
+\caption{Satiation curves. Continuation probability rises monotonically with the number of consecutive prior sessions that included category $c$ (Spearman $\rho = 1.00$).}
+\label{tab:satiation}
+\begin{tabular}{rcc}
+\toprule
+Dosage $k$ & $P(\text{next session includes } c)$ & $N$ \\
+\midrule
+0 & 0.296 & 229,341 \\
+1 & 0.423 & 100,274 \\
+2 & 0.521 & 52,322 \\
+3 & 0.599 & 30,838 \\
+5 & 0.707 & 13,343 \\
+7 & 0.772 & 6,870 \\
+10+ & 0.876 & 17,477 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:satiation} is monotone over the observed range. Continuation rises from 29.6\% at $k=0$ to 87.6\% at $k=10+$, with Spearman correlation $\rho = 1.00$ across the reported bins. Within this 14-day window, there is no evidence of satiation. Repeated successful engagement with a category makes additional engagement \emph{more} likely, not less likely. That is a strong form of state dependence.
+
+\subsection{Position and the persuasion radius}
+
+A complementary question is whether interface design can compensate for taste mismatch. We estimate a linear probability model on roughly 2 million labeled impressions,
+\[
+P(\text{click}_{ij}=1)
+=
+\alpha
++
+\beta_{\text{position}}\,\text{position}_{ij}
++
+\beta_{\text{distance}}\,d_{ij}
++
+\beta_{\text{interaction}}\,(\text{position}_{ij}\times d_{ij})
++
+\varepsilon_{ij},
+\]
+where $d_{ij}$ is cosine distance. The estimated coefficients are $\hat\beta_{\text{position}} = +0.0016$, $\hat\beta_{\text{distance}} = -0.070$, and $\hat\beta_{\text{interaction}} = -0.0019$. Under the coding used in the estimation, the positive main effect of position means that more prominent placement raises click probability on average. The negative interaction shows, however, that this benefit is concentrated on articles already close to the user's taste. Prominence helps convert plausible recommendations; it does not rescue recommendations that are too far away in taste space.
+
+\subsection{Gateway categories}
+
+If persuasion is local, then movement into a new category should often proceed through neighboring interests rather than through one large jump. To study that pattern, we define \emph{entrants} into category $c$ as users with $\theta_{i,c}^{(\mathrm{P1})}=0$ and $\theta_{i,c}^{(\mathrm{P3})}>0$. We then compare entrants' baseline category profile with that of non-entrants. The resulting overrepresentation ratios tell us which existing interests are disproportionately common among future entrants. The qualitative network is intuitive: entertainment acts as a gateway into movies, music, and TV; health, food, and lifestyle form a tightly connected cluster; and autos and travel are linked. News is different. Entry into news is common, but it draws broadly rather than from one dominant source category.
+
+\subsection{Engagement intensity}
+
+Not all sessions carry the same amount of signal. Let
+\[
+\|\Delta\boldsymbol{\theta}\|
+=
+\left\|
+\boldsymbol{\theta}^{(t+1)}-\boldsymbol{\theta}^{(t)}
+\right\|
+\]
+denote the magnitude of taste change between consecutive daily sessions. Sessions with only one click generate the largest shifts, whereas sessions with five or more clicks generate the smallest, with Spearman correlation $\rho=-0.444$ between click count and shift magnitude. The interpretation is intuitive: many clicks tend to average out into a more diffuse signal, while a single click, especially on relatively novel content, is a cleaner directional update.
+
+\subsection{Category stickiness}
+
+A click is more valuable when it opens the door to a category that users are likely to revisit. To summarize that heterogeneity, we define for each category $c$ an \emph{entry rate}
+\[
+P\!\left(\theta_{i,c}^{(\mathrm{P3})}>0 \mid \theta_{i,c}^{(\mathrm{P1})}=0\right)
+\]
+and a \emph{retention rate}
+\[
+P\!\left(\theta_{i,c}^{(\mathrm{P3})}>0 \mid \theta_{i,c}^{(\mathrm{P1})}>0\right).
+\]
+Entry measures how easy a category is to activate; retention measures how likely that activation is to persist. Classifying categories by whether entry and retention are above or below the median yields the four types in Table~\ref{tab:stickiness}.
+
+\begin{table}[ht]
+\centering
+\caption{Category stickiness. Entry = $P(\theta_{i,c}^{(\text{P3})} > 0 \mid \theta_{i,c}^{(\text{P1})} = 0)$; retention = $P(\theta_{i,c}^{(\text{P3})} > 0 \mid \theta_{i,c}^{(\text{P1})} > 0)$. Categories are classified by whether entry and retention are above or below the median.}
+\label{tab:stickiness}
+\begin{tabular}{lccl}
+\toprule
+Category & Entry rate & Retention & Type \\
+\midrule
+news & 0.607 & 0.819 & Trap \\
+lifestyle & 0.424 & 0.590 & Trap \\
+finance & 0.360 & 0.412 & Trap \\
+sports & 0.334 & 0.698 & Trap \\
+autos & 0.114 & 0.497 & Fortress \\
+foodanddrink & 0.180 & 0.457 & Fortress \\
+video & 0.122 & 0.517 & Fortress \\
+health & 0.189 & 0.348 & Revolving door \\
+music & 0.243 & 0.252 & Revolving door \\
+tv & 0.188 & 0.337 & Revolving door \\
+entertainment & 0.176 & 0.343 & Leaky bucket \\
+movies & 0.087 & 0.147 & Leaky bucket \\
+travel & 0.151 & 0.327 & Leaky bucket \\
+weather & 0.130 & 0.386 & Leaky bucket \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:stickiness} is best read as a compact map of category-specific state dependence. ``Traps'' are easy to enter and hard to leave, ``fortresses'' are hard to enter but sticky once reached, ``revolving doors'' attract entry without much persistence, and ``leaky buckets'' do neither well. These distinctions matter because the downstream value of a click depends not only on the clicked article itself, but also on the persistence properties of the category that the click activates.
+
+\subsection{Rebound effect}
+
+Taste changes need not persist indefinitely. The final question in this section is whether the increases observed during P2 remain in place or partially unwind. We focus on the 420,554 user--category pairs for which P2 taste exceeds P1 taste by at least 0.01. For such pairs, define
+\[
+\text{Overshoot}_{i,c}
+=
+\theta_{i,c}^{(\mathrm{P2})}
+-
+\theta_{i,c}^{(\mathrm{P1})},
+\qquad
+\text{Rebound}_{i,c}
+=
+\theta_{i,c}^{(\mathrm{P3})}
+-
+\theta_{i,c}^{(\mathrm{P2})},
+\]
+and
+\[
+\text{NetMomentum}_{i,c}
+=
+\theta_{i,c}^{(\mathrm{P3})}
+-
+\theta_{i,c}^{(\mathrm{P1})}.
+\]
+A negative rebound indicates reversal from the P2 peak; a positive net-momentum value indicates that some of the gain survives into P3. Table~\ref{tab:rebound} reports the mean values.
+
+\begin{table}[ht]
+\centering
+\caption{Rebound effect for 420,554 (user, category) pairs where P2 taste exceeded P1 by $\geq 0.01$. Users partially revert but retain positive net momentum.}
+\label{tab:rebound}
+\begin{tabular}{lccc}
+\toprule
+ & Value & $t$-stat & $p$ \\
+\midrule
+Mean rebound (P3 $-$ P2) & $-0.089$ & $-607$ & $\approx 0$ \\
+Mean net momentum (P3 $-$ P1) & $+0.119$ & $+899$ & $\approx 0$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:rebound} shows partial mean reversion rather than full decay. The average rebound is negative, so some of the P2 increase unwinds, but net momentum remains positive. A useful scalar summary is that roughly 57\% of the average overshoot survives into P3. Larger overshoots also revert more strongly, so it is helpful to inspect the relationship across the overshoot distribution. Table~\ref{tab:rebound_quintile} reports that breakdown.
+
+\begin{table}[ht]
+\centering
+\caption{Rebound by overshoot quintile. Larger overshoots produce larger reversions ($\rho = -0.895$), but net momentum remains positive throughout.}
+\label{tab:rebound_quintile}
+\begin{tabular}{rccc}
+\toprule
+Quintile & Overshoot & Rebound & Net momentum \\
+\midrule
+Q0 & $+0.052$ & $-0.016$ & $+0.036$ \\
+Q1 & $+0.104$ & $-0.034$ & $+0.070$ \\
+Q2 & $+0.170$ & $-0.063$ & $+0.106$ \\
+Q3 & $+0.282$ & $-0.121$ & $+0.161$ \\
+Q4 & $+0.517$ & $-0.260$ & $+0.257$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:rebound_quintile} shows two simultaneous regularities. First, larger overshoots do indeed produce larger reversions. Second, those reversions are incomplete in every quintile, so net momentum remains positive throughout. The natural interpretation is a mean-reverting process with drift: clicks move taste, part of the movement decays, but a nontrivial fraction persists.
+
+%======================================================================
+\section{Discussion}
+\label{sec:discussion}
+%======================================================================
+
+The empirical picture is now coherent. First, estimated current taste has real predictive content for immediate click choice. Similarity between user taste and article features predicts CTR nonparametrically, improves impression-level ranking performance, and remains strongly associated with future click allocation even after conditioning on the displayed assortment. This justifies the use of a taste state variable in the first place.
+
+Second, tastes evolve in the direction of realized engagement. The three-period design shows strong alignment between future taste movement and intermediate-period consumption, while the session-level evidence shows short-run reinforcement and compounding. At the same time, entropy rises for most users, so within-category reinforcement coexists with broadening across categories.
+
+Third, persuasion is local. Click probability decays sharply with cosine distance, yet conditional taste movement is larger for more distant clicks. That is the core exploitation--exploration tension: the platform cannot move users arbitrarily far in one step, but it may be able to move them gradually through a sequence of successful local clicks.
+
+Fourth, and most importantly for modeling, the relevant state-changing channel is engagement rather than exposure in the abstract. Clicked exposure strongly predicts future taste. Ignored exposure does not merely have a weaker version of the same effect; relative to a never-shown benchmark, it is associated with movement away from the category. For a dynamic recommender, the objective is therefore not simply to maximize impressions or even broad topical coverage. It is to deliver impressions that are close enough to current taste to generate genuine engagement while still rich enough to update the state.
+
+Two caveats should remain explicit. The report is observational, so the coefficients and contrasts should be interpreted as reduced-form regularities rather than causal treatment effects of recommendation changes. And some of the dynamic results become visible only over the longer 14-day window, which suggests that the underlying process consists of many small updates accumulating over time rather than one or two large jumps.
+
+%======================================================================
+\section{Robustness}
+%======================================================================
+
+A useful robustness check is to compare the short-horizon MINDsmall sample with the 14-day MINDlarge sample. This comparison addresses two different concerns at once: whether the static relationships replicate across releases, and whether the dynamic effects are sensitive to the length of the observation window. Table~\ref{tab:robustness} summarizes the comparison.
+
+\begin{table}[ht]
+\centering
+\caption{Robustness: MINDsmall (7 days) versus MINDlarge (14 days). Core results replicate within 5\%; taste shift requires the longer window.}
+\label{tab:robustness}
+\begin{tabular}{lcc}
+\toprule
+Metric & MINDsmall & MINDlarge \\
+\midrule
+Users analyzed & 35,443 & 143,574 \\
+Time window & 7 days & 14 days \\
+$\cos(\text{hist}, \text{clicked})$ & 0.664 & 0.682 \\
+$\cos(\text{hist}, \text{shown})$ & 0.769 & 0.776 \\
+Self-reinforcement lift & $+242\%$ & $+243\%$ \\
+Categories significant & 14/14 & 14/14 \\
+$\beta(\text{hist\_frac})$ & 0.406 & 0.390 \\
+$R^2$ & 0.382 & 0.411 \\
+\textbf{Taste shift alignment} & $\boldsymbol{-0.012}$ \textbf{(n.s.)} & $\boldsymbol{+0.360}$ ($\boldsymbol{z = 515}$) \\
+Subcategory sim AUC & --- & 0.613 \\
+MNL AUC & --- & 0.707 \\
+Effective persuasion radius & --- & $d \leq 0.66$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Table~\ref{tab:robustness} shows that the static relationships replicate almost exactly across datasets. Self-reinforcement lift, the historical-taste regression coefficient, and $R^2$ are all within about 5\% of one another. All 14 retained categories are significant in both samples. The one result that does not replicate is the three-period taste-shift alignment, which is insignificant in MINDsmall and strongly positive in MINDlarge. That is better interpreted as a power issue than as an instability of the underlying phenomenon. Per-period taste steps are small; a 7-day window is enough to detect within-session and cross-session persistence, but not long enough for aggregate drift to emerge cleanly above noise.
+
+%======================================================================
+\section{Figures}
+%======================================================================
+
+Figures~\ref{fig:full}--\ref{fig:deep} collect the main visual summaries. They are included here as companions to the corresponding tables and sections rather than as standalone evidence. To make the source file compile safely even when the original PNGs are stored elsewhere, the figure commands below fall back to placeholders if the image files are not present alongside the \texttt{.tex} file.
+
+\begin{figure}[ht]
+    \centering
+    \safeincludegraphics[width=\textwidth]{full_analysis.png}
+    \caption{\textbf{(a)}~Cosine similarity vs.\ CTR. \textbf{(b)}~MNL calibration. \textbf{(c)}~CTR decay with distance. \textbf{(d)}~Reinforcement vs.\ click distance. \textbf{(e)}~Within-category substitution. \textbf{(f)}~Cross-category spillover heatmap.}
+    \label{fig:full}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[ht]
+    \centering
+    \safeincludegraphics[width=\textwidth]{../output_large/taste_drift_large.png}
+    \caption{Taste dynamics. \textbf{(A1)}~Prior taste persistence. \textbf{(A2)}~Similarity decay. \textbf{(A3)}~Self-reinforcement by category. \textbf{(A4)}~Entropy trajectory. \textbf{(A5)}~Transition heatmap. \textbf{(A6)}~Taste shift alignment vs.\ permutation null.}
+    \label{fig:drift}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[ht]
+    \centering
+    \safeincludegraphics[width=\textwidth]{decomposed_exposure.png}
+    \caption{Exposure vs.\ engagement. \textbf{(1)}~Decomposed OLS coefficients. \textbf{(2)}~Four-way cosine alignment. \textbf{(3)}~Three-way taste shift decomposition. \textbf{(4)}~Quintile dose-response. \textbf{(5)}~Per-category click vs.\ exposure effects. \textbf{(6)}~Direction of taste shift for shown-not-clicked pairs.}
+    \label{fig:exposure}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[ht]
+    \centering
+    \safeincludegraphics[width=\textwidth]{../output_large/deep_behavioral.png}
+    \caption{Fine structure. \textbf{(1)}~Entropy change distribution. \textbf{(2)}~Satiation curves. \textbf{(3)}~Position $\times$ distance heatmap. \textbf{(4)}~Gateway network. \textbf{(5)}~Shift magnitude by session size. \textbf{(6)}~Entry vs.\ retention. \textbf{(7)}~Overshoot vs.\ reversion. \textbf{(8)}~Summary.}
+    \label{fig:deep}
+\end{figure}
+\FloatBarrier
+
+\end{document}
