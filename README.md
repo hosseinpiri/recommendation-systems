@@ -27,7 +27,7 @@ The MIND dataset files are not included in this repository due to their size. Do
 
 - `output/` -- Results from MINDsmall robustness analysis (`taste_drift_analysis.py`)
 - `output_large/` -- Results from MINDlarge individual analyses (taste drift, exposure, deep behavioral)
-- `output_full/` -- Consolidated results and the full empirical report (`revised_full_empirical_report_expanded.tex/.pdf`)
+- `output_full/` -- Consolidated results and the full empirical report (`report_march_2026.tex/.pdf`)
 
 ## Key Findings
 
