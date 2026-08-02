@@ -41,3 +41,19 @@ The MIND dataset files are not included in this repository due to their size. Do
 
 - Python 3.8+
 - numpy, pandas, scipy, scikit-learn, matplotlib, statsmodels
+
+## Phase 1-2: Structural Calibration (August 2026)
+
+The `phase1_2_Aug2026/` folder contains the structural estimation of the
+recommendation-persuasion model (consumption logit kappa, taste-transition rho,
+backfire rho_ns) and the calibrated cultivation-aware vs cultivation-blind
+simulation (uniform / heterogeneous-margin / high-engagement / horizon / kappa
+sweeps). See `phase1_2_Aug2026/README.md` for the pipeline and
+`phase1_2_Aug2026/memo_phase1_2.pdf` for the write-up.
+
+## Data availability
+
+The MIND dataset is NOT included in this repository: the files exceed GitHub
+size limits and the Microsoft Research License Terms for MIND do not permit
+redistribution. Download MINDlarge/MINDsmall from https://msnews.github.io/
+and set the BASE/SCRATCH paths documented in each script.
