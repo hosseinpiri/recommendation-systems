@@ -1,0 +1,96 @@
+{
+  "items": [
+    "news",
+    "lifestyle",
+    "sports",
+    "finance",
+    "foodanddrink",
+    "entertainment",
+    "travel",
+    "health"
+  ],
+  "kappa_dense": 2.1313407241442786,
+  "alpha_dense": [
+    -4.719496257561274,
+    -4.756034802381966,
+    -4.311449038668497,
+    -4.746132841614459,
+    -4.782891400620912,
+    -5.0329970410161,
+    -5.087558293846497,
+    -4.842158881957382
+  ],
+  "margins": {
+    "news": 1.0,
+    "sports": 1.2,
+    "entertainment": 1.1,
+    "lifestyle": 1.5,
+    "foodanddrink": 1.8,
+    "health": 2.5,
+    "travel": 3.0,
+    "finance": 4.0
+  },
+  "H": 30,
+  "N_EP": 3000,
+  "seeds": [
+    1,
+    2,
+    3
+  ],
+  "results": {
+    "0.0": {
+      "aware_rev": 4.276233333333334,
+      "myopic_rev": 4.276233333333334,
+      "gap_pct": 0.0,
+      "aware_bridge_share": 0.0,
+      "per_seed_gap_pct": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "bridge2_share_dense": 0.0
+    },
+    "0.035": {
+      "aware_rev": 4.341144444444445,
+      "myopic_rev": 4.341144444444445,
+      "gap_pct": 0.0,
+      "aware_bridge_share": 0.00016296296296296295,
+      "per_seed_gap_pct": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "bridge2_share_dense": 0.0
+    },
+    "0.15": {
+      "aware_rev": 4.582466666666666,
+      "myopic_rev": 4.582855555555556,
+      "gap_pct": -0.00848573305825078,
+      "aware_bridge_share": 0.00013703703703703705,
+      "per_seed_gap_pct": [
+        -0.03698361625800349,
+        0.0,
+        0.010953382404480435
+      ],
+      "bridge2_share_dense": 0.0
+    },
+    "0.35": {
+      "aware_rev": 4.791133333333334,
+      "myopic_rev": 4.790666666666667,
+      "gap_pct": 0.009741163373233913,
+      "aware_bridge_share": 0.0006037037037037036,
+      "per_seed_gap_pct": [
+        -0.0007029926396716681,
+        -0.024885767414849914,
+        0.0547660311958299
+      ],
+      "bridge2_share_dense": 0.0
+    }
+  },
+  "bridge2_share_onehot": {
+    "0.035": 0.0,
+    "0.15": 0.0,
+    "0.35": 0.0
+  },
+  "gram_offdiag_mean": 0.7107765413496896
+}

@@ -193,6 +193,81 @@ def main():
         cmd("kgapmidpct", f(kgaps[thr]["0.15"], 1))
         cmd("kgaphipct", f(kgaps[kaps[-1]]["0.15"], 1))
 
+    # ---- follow-up batch: dense features, slate model, transitions, margins
+    pemb = os.path.join(OUT, "p5_embeddings.json")
+    if os.path.exists(pemb):
+        with open(pemb) as fh:
+            emb = json.load(fh)
+        cmd("gramoffmean", f(emb["offdiag_mean"], 2))
+        cmd("gramoffmin", f(emb["offdiag_min"], 2))
+        cmd("gramoffmax", f(emb["offdiag_max"], 2))
+
+    psl = os.path.join(OUT, "p5_slate_dense.json")
+    if os.path.exists(psl):
+        with open(psl) as fh:
+            sl = json.load(fh)
+        cmd("kapA", f(sl["A_cat"]["kappa"], 2))
+        cmd("kapAsd", f(sl["A_cat"]["kappa_per_sd"], 2))
+        cmd("kapB", f(sl["B_dense"]["kappa"], 2))
+        cmd("kapBsd", f(sl["B_dense"]["kappa_per_sd"], 2))
+        cmd("kapCsd", f(sl["C_dense_pos"]["kappa_per_sd"], 2))
+        cmd("kapDcat", f(sl["D_slate_cat"]["kappa"], 2))
+        cmd("kapDcatsd", f(sl["D_slate_cat"]["kappa_per_sd"], 2))
+        cmd("kapDdensesd", f(sl["D_slate_dense"]["kappa_per_sd"], 2))
+        cmd("posfar", f(abs(sl["C_dense_pos"]["pos_effects"]["bucket7"]), 2))
+        cmd("singleclick", f(100 * sl.get("share_single_click_impressions",
+                                          sl["share_single_click"]), 0))
+
+    prr = os.path.join(OUT, "p5_rho_dense_renorm.json")
+    if os.path.exists(prr):
+        with open(prr) as fh:
+            rr = json.load(fh)
+        cmd("rhodensearticle", f(rr["article"]["rho_hat"], 2))
+        cmd("LRdensearticle", f(rr["article"]["LR_vs_zero"], 0))
+
+    p7 = os.path.join(OUT, "p7_sim_dense.json")
+    if os.path.exists(p7):
+        with open(p7) as fh:
+            ds = json.load(fh)
+        gaps = [abs(v["gap_pct"]) for v in ds["results"].values()]
+        cmd("densegapmax", f(max(gaps), 2))
+        b2 = max(v["bridge2_share_dense"] for v in ds["results"].values())
+        cmd("bridgetwodense", f(100 * b2, 1))
+
+    p8 = os.path.join(OUT, "p8_sim_transition.json")
+    if os.path.exists(p8):
+        with open(p8) as fh:
+            tr = json.load(fh)
+        r = tr["results"]
+
+        def gk(tag, ten, rns):
+            return r[f"{tag}|{ten}|rho_ns={rns}"]["gap_pct"]
+
+        cmd("bfgapzero", f(gk("kappa_hat", "empirical_mix", 0.0), 2))
+        cmd("bfgapmild", f(gk("kappa_hat", "empirical_mix", -0.002), 2))
+        cmd("bfgapstrong", f(gk("kappa_hat", "empirical_mix", -0.015), 2))
+        cmd("bfgapnew", f(gk("kappa_hat", "new_n0_5", -0.015), 2))
+        cmd("bfgaptenured", f(gk("kappa_hat", "tenured_n0_40", -0.015), 2))
+        cmd("bfgapkfive", f(gk("kappa_5", "empirical_mix", -0.015), 2))
+        cmd("bfgapkfivezero", f(gk("kappa_5", "empirical_mix", 0.0), 2))
+        val = tr["validation"]
+        errs = [abs(v["aware_mc"] - v["exact_dp"]) / abs(v["exact_dp"])
+                for v in val.values()]
+        cmd("bfplannererr", f(100 * max(errs), 1))
+
+    p9 = os.path.join(OUT, "p9_margin_sweep.json")
+    if os.path.exists(p9):
+        with open(p9) as fh:
+            ms = json.load(fh)
+        cmd("nmarginvec", ms["n_vectors"])
+        cmd("margingapmax", f(ms["max_gap_pct"], 2))
+        cmd("margingapmed", f(ms["median_gap_pct"], 2))
+        cmd("margingapninety", f(ms["p90_gap_pct"], 2))
+        best_rh = [row.get("gap_pct_at_rho_hat") for row in ms["rows"]
+                   if "gap_pct_at_rho_hat" in row]
+        if best_rh:
+            cmd("margingapmaxrhohat", f(max(best_rh), 2))
+
     with open(os.path.join(OUT, "numbers.tex"), "w") as fh:
         fh.write("\n".join(L) + "\n")
     print("wrote numbers.tex with", len(L), "macros")

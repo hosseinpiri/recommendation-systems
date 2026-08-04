@@ -20,6 +20,24 @@ Model as estimated (taste space = 18-category simplex, x_i = e_cat, m = 1):
 | `p2_simulation.py` | MIND-calibrated simulation: oracle/learning x cultivation-aware/blind, rho sweep, planner validated against exact DP on a small instance |
 | `p3_figures.py` | All memo figures |
 
+## Follow-up batch (Aug 2026)
+
+| Script | What it does |
+|---|---|
+| `p5a_embeddings.py` | LSA article embeddings (TF-IDF + SVD d=50, unit-norm); category-centroid Gram matrix |
+| `p5b_prep.py` | Impression sample with positions + dense-rho profile pieces |
+| `p5c_estimation.py` | Dense-alignment logits, position controls, slate conditional logit with outside option |
+| `p5d/p5e_rho_dense*.py` | Dense-space rho profiles (article-vector and centroid steps); both peak at rho = 0 |
+| `p7_sim_dense.py` | Dense-geometry simulation + exact two-period bridge diagnostic (dense and one-hot) |
+| `p8_sim_transition.py` | Tenure-dependent rho + backfire simulation; exact expectimax-DP validation |
+| `p9_margin_sweep.py` | 93-vector margin-space sweep with adversarial configurations, CRN-paired gaps |
+
+Key results: standardized alignment effect ~0.33 log-odds per SD in every
+specification (slate logit raises it); dense-rho profiles peak at zero; bridges
+absent (exact two-period share 0%) in both geometries at calibrated kappa;
+margin worst case 0.83%; backfire x kappa complementarity (0.1% -> 4.3% at
+kappa=5 with rho_ns=-0.015).
+
 ## Outputs
 
 `output/p1a_consumption.json`, `output/p1b_transition.json`, `output/p2_simulation.json`,
