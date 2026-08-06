@@ -268,6 +268,37 @@ def main():
         if best_rh:
             cmd("margingapmaxrhohat", f(max(best_rh), 2))
 
+    pa = os.path.join(OUT, "arc_master_results.json")
+    if os.path.exists(pa):
+        with open(pa) as fh:
+            arc = json.load(fh)
+        pr = arc["profiles"]
+        cmd("kapnine", f(pr["u9|free"]["kappa"][pr["u9|free"]["rho"].index(
+            pr["u9|free"]["rho_hat"])], 3))
+        bt = arc["bootstrap"]
+        cmd("bootlo", f(bt["rho_hat_pct"]["2.5"], 3))
+        cmd("boothi", f(bt["rho_hat_pct"]["97.5"], 3))
+        cmd("bootreps", bt["n_reps"])
+        mains = [x for x in arc["sim"] if x["family"] == "main"]
+        tb = max(x["gap_pct"] + 1.833 * x["gap_pct_se"] for x in mains)
+        cmd("equivbound", f(tb, 2))
+        gate = {(s["kappa"], s["recenter"], s["rho"]): s
+                for s in arc["sim"] if s["family"] == "gate"}
+        cmd("gaterawseven", f(gate[(7.0, "raw", 0.15)]["gap_pct"], 1))
+        cmd("gateisoseven", f(gate[(7.0, "iso", 0.15)]["gap_pct"], 1))
+        cmd("gaterawfive", f(gate[(5.0, "raw", 0.15)]["gap_pct"], 1))
+        cmd("gateisofive", f(gate[(5.0, "iso", 0.15)]["gap_pct"], 1))
+        back = {(s["kappa"], s["rho_ns"]): s
+                for s in arc["sim"] if s["family"] == "back"}
+        cmd("arcbffive", f(back[(5.0, -0.015)]["gap_pct"], 1))
+        cmd("arcbffivezero", f(back[(5.0, 0.0)]["gap_pct"], 2))
+        if "margins" in arc:
+            mg = arc["margins"]
+            cmd("arcnvec", f"{mg['n_vectors']:,}")
+            cmd("arcmaxgap", f(mg["max_gap_pct"], 2))
+            cmd("arcpninenine", f(mg["p99"], 2))
+            cmd("arcmedgap", f(mg["median"], 2))
+
     with open(os.path.join(OUT, "numbers.tex"), "w") as fh:
         fh.write("\n".join(L) + "\n")
     print("wrote numbers.tex with", len(L), "macros")

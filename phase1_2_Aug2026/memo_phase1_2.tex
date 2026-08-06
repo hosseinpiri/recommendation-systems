@@ -148,11 +148,21 @@ likelihood-ratio cutoff.}
 \label{fig:profile}
 \end{figure}
 
-Figure~\ref{fig:profile} shows the result: $\hat\rho=\rhohat$, 95\% profile
-CI [\rhocilo, \rhocihi] by local quadratic approximation, likelihood ratio
-\LRrho\ against $\rho=0$. A permutation placebo (dev click labels shuffled
-within user) collapses the likelihood ratio to noise, so the effect is
-identified by which items a user clicks, not by user-level composition. At
+Figure~\ref{fig:profile} shows the result: $\hat\rho=\rhohat$, likelihood
+ratio \LRrho\ against $\rho=0$. Three robustness layers, run at scale on
+the ARC cluster, pin this estimate down. First, invariance: re-estimating on
+the exact eight-category-plus-other state the simulator uses, and fixing
+$\kappa$ at either the training-window value (1.751) or the dev-window
+value (2.141), returns $\hat\rho=\rhohat$ in every one of six
+configurations, so the transition estimate does not depend on the category
+universe or on which $\kappa$ it is paired with. Second, inference that
+respects user dependence: a user-block bootstrap (\bootreps\ replicates,
+every state rebuilt inside each resample) gives a 95\% interval of
+[\bootlo, \boothi], endpoints quantized at the 0.005 grid step, with
+every replicate rejecting $\rho=0$. Third, a
+permutation placebo (dev click labels shuffled within user) collapses the
+likelihood ratio to noise, so the effect is identified by which items a user
+clicks, not by user-level composition. At
 $\hat\rho$ the dev-window alignment coefficient is \kappadev\ (SE
 \kappadevse), consistent with the training-window estimate. Two conversions
 make the magnitude concrete: a step of \rhohat\ implies a half-life of about
@@ -241,6 +251,17 @@ how today's action moves tomorrow's state. All policies face common random
 numbers, so at $\rho=0$ aware and blind coincide by construction.
 
 \subsection{The calibrated null}
+
+Two calibration refinements precede the results. Re-estimating jointly on
+the exact simulator state (eight categories plus an explicit other bucket,
+no renormalization) gives $\kappa=\kapnine$, between the training and dev
+values, and every main scenario below was run at both $\kappa=1.751$ and
+$\kappa=2.141$ with per-user paired differences under common random
+numbers. The paired design supports an equivalence statement rather than a
+bare null: in every one of the 24 main cells, the cell's own one-sided
+95\% upper bound ($t_9$) on the aware-over-myopic premium is at most
+\equivbound\%; a Bonferroni-simultaneous version of the same statement
+sits near 0.6\% and supports the same conclusion.
 
 Table~\ref{tab:sim} reports the uniform-margin baseline, and the result is a
 null we did not script: \emph{cultivation blindness costs essentially
@@ -341,17 +362,19 @@ the gate analysis below says steering begins. At MIND's alignment
 sensitivity, bridges do not exist anywhere in the empirical state
 distribution.
 
-The gate is quantifiable, and standardization makes it
-representation-independent. Table~\ref{tab:kappa} sweeps $\kappa$ with
-heterogeneous margins and all other parameters calibrated: the dynamic
-premium is worthless at $\hat\kappa=\kappahat$, about 1\% at $\kappa=5$,
-and reaches \kgapmidpct\% at $\kappa=\kappathresh$ ($\rho=0.15$). In
-standardized units the MIND estimate is roughly 0.33 log-odds per SD of
-alignment, stable across category, dense, and slate specifications, while
-the $\kappa=\kappathresh$ gate corresponds to roughly 1.3. Cultivation
-starts to pay on platforms where alignment discriminates about four times
-more sharply than it does in news reading; that is the number the group can
-carry to other applications.
+Quantifying the gate requires care, because raising $\kappa$ with fixed
+intercepts raises overall engagement, not just discrimination, and the two
+must be separated. The raw sweep (Table~\ref{tab:kappa}) shows the premium
+reaching \kgapmidpct\% at $\kappa=\kappathresh$, $\rho=0.15$; but an
+iso-engagement sweep on the cluster, recentering every intercept at each
+$\kappa$ so that category-level average click rates match the calibrated
+baseline, collapses that cell from \gaterawseven\% to \gateisoseven\%
+(at $\kappa=5$: \gaterawfive\% to \gateisofive\%). Most of the raw
+gate was engagement, not discrimination. The honest statement is stronger
+than the one it replaces: holding engagement fixed, even four times MIND's
+alignment sensitivity yields a premium of about one percent, so alignment
+sensitivity alone, at any plausible level, does not make cultivation-aware
+planning valuable in this model.
 
 \begin{table}[ht]
 \centering
@@ -383,10 +406,13 @@ The answer is a complementarity. At the calibrated
 $\hat\kappa=\kappahat$, nothing happens: gaps stay between
 \bfgapmild\% and \bfgapstrong\% across backfire strengths and user
 tenures, because damaging a state that barely moves choice probabilities
-is not much of a threat. At $\kappa=5$, where the reachability gate is
-close, the same backfire term raises the premium from \bfgapkfivezero\%
-to \bfgapkfive\%, with the aware policy recommending non-myopically in a
-quarter of all periods. Backfire supplies the cost of failure and
+is not much of a threat. At $\kappa=5$ the same backfire term raises the
+premium from \bfgapkfivezero\% to \bfgapkfive\%, with the aware policy
+recommending non-myopically in a quarter of all periods; re-run on the
+cluster under the corrected state definition, empirical tenures, and ten
+paired seeds, the effect is \arcbffivezero\% without backfire and
+\arcbffive\% with it, so the complementarity survives every
+specification correction applied so far. Backfire supplies the cost of failure and
 $\kappa$ supplies its consequence; either alone is worthless, together
 they produce the first economically meaningful planning premium in any
 scenario anchored to the data. The model extension the estimation
@@ -422,19 +448,22 @@ cultivation has bite, and they concentrate whatever cultivation exists
 among new users.
 \item \textbf{At calibrated parameters, planning adds nothing beyond
 reactive myopia, and the result is now thorough.} The null survives high
-engagement, long horizons, a systematic search over \nmarginvec\ margin
-configurations including adversarial ones (every gap below 1\%),
+engagement, long horizons, a systematic search over \arcnvec\ margin
+configurations (99th-percentile gap \arcpninenine\%),
 and the move from one-hot to dense content geometry, where the exact
 two-period test finds bridges for zero percent of empirical states. Two
 mechanisms explain it: failures are state-neutral, so direct targeting is
-itself the best cultivator, and MIND's standardized alignment effect
-(about 0.33 log-odds per SD, stable across every specification) sits
-roughly four times below the gate where steering starts to pay.
+itself the best cultivator, and alignment sensitivity alone cannot rescue
+planning: at fixed engagement, even four times MIND's sensitivity yields
+about a one percent premium. The paired design turns the null into an
+equivalence result, with a 95\% upper bound of \equivbound\% on the
+premium across all main scenarios.
 \item \textbf{The premium exists, and the data point at its recipe.}
 Simulating the transition the estimation prefers shows backfire and
 alignment sensitivity are complements: at $\hat\kappa$ backfire changes
-nothing, at $\kappa=5$ it moves the premium from \bfgapkfivezero\% to
-\bfgapkfive\% with a quarter of recommendations non-myopic. Resistance
+nothing, at $\kappa=5$ it moves the premium from about
+\arcbffivezero\% to \arcbffive\% (cluster re-run, corrected states,
+empirical tenures) with a quarter of recommendations non-myopic. Resistance
 makes cultivation strategic; alignment sensitivity transmits it. That is
 a concrete, falsifiable claim about which platforms should invest in
 cultivation-aware algorithms.
