@@ -156,7 +156,7 @@ def run_variant(name, seed):
             for c in range(8):
                 target = sigmoid(ALPHA[c] + KAPPA * pool[:, c]).mean()
                 d2 = (1 - pool[:, c]) ** 2 + (pool ** 2).sum(1) - pool[:, c] ** 2
-                lo, hi = -10, 5
+                lo, hi = -10, 40
                 for _ in range(60):
                     mid = 0.5 * (lo + hi)
                     if sigmoid(mid - lam * d2).mean() > target:

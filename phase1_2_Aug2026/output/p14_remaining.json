@@ -7,68 +7,100 @@
   },
   "manufactured_target": {
     "da=0.0|mm=1.0": {
-      "gap_rho_hat": 0.0,
-      "gap_rho_015": 0.14
+      "gap_rho_hat": 0.02,
+      "gap_rho_hat_se": 0.02,
+      "gap_rho_015": 0.18,
+      "gap_rho_015_se": 0.1
     },
     "da=0.0|mm=2.0": {
       "gap_rho_hat": 0.0,
-      "gap_rho_015": 0.0
+      "gap_rho_hat_se": 0.0,
+      "gap_rho_015": -0.01,
+      "gap_rho_015_se": 0.01
     },
     "da=0.0|mm=4.0": {
       "gap_rho_hat": 0.0,
-      "gap_rho_015": 0.0
+      "gap_rho_hat_se": 0.0,
+      "gap_rho_015": 0.0,
+      "gap_rho_015_se": 0.0
     },
     "da=0.0|mm=8.0": {
       "gap_rho_hat": 0.0,
-      "gap_rho_015": 0.0
+      "gap_rho_hat_se": 0.0,
+      "gap_rho_015": 0.0,
+      "gap_rho_015_se": 0.0
     },
     "da=-1.0|mm=1.0": {
-      "gap_rho_hat": 0.1,
-      "gap_rho_015": -0.06
+      "gap_rho_hat": 0.02,
+      "gap_rho_hat_se": 0.15,
+      "gap_rho_015": 0.1,
+      "gap_rho_015_se": 0.29
     },
     "da=-1.0|mm=2.0": {
-      "gap_rho_hat": -0.04,
-      "gap_rho_015": -0.45
+      "gap_rho_hat": 0.59,
+      "gap_rho_hat_se": 0.18,
+      "gap_rho_015": 1.54,
+      "gap_rho_015_se": 0.27
     },
     "da=-1.0|mm=4.0": {
-      "gap_rho_hat": 0.07,
-      "gap_rho_015": 0.1
+      "gap_rho_hat": 0.0,
+      "gap_rho_hat_se": 0.0,
+      "gap_rho_015": 0.11,
+      "gap_rho_015_se": 0.08
     },
     "da=-1.0|mm=8.0": {
       "gap_rho_hat": 0.0,
-      "gap_rho_015": 0.0
+      "gap_rho_hat_se": 0.0,
+      "gap_rho_015": 0.0,
+      "gap_rho_015_se": 0.0
     },
     "da=-2.0|mm=1.0": {
-      "gap_rho_hat": 0.04,
-      "gap_rho_015": -0.06
+      "gap_rho_hat": -0.08,
+      "gap_rho_hat_se": 0.1,
+      "gap_rho_015": -0.01,
+      "gap_rho_015_se": 0.28
     },
     "da=-2.0|mm=2.0": {
-      "gap_rho_hat": 0.04,
-      "gap_rho_015": 0.0
+      "gap_rho_hat": -0.12,
+      "gap_rho_hat_se": 0.07,
+      "gap_rho_015": 0.04,
+      "gap_rho_015_se": 0.24
     },
     "da=-2.0|mm=4.0": {
-      "gap_rho_hat": 0.81,
-      "gap_rho_015": 2.53
+      "gap_rho_hat": -0.2,
+      "gap_rho_hat_se": 0.33,
+      "gap_rho_015": -0.03,
+      "gap_rho_015_se": 0.2
     },
     "da=-2.0|mm=8.0": {
-      "gap_rho_hat": -0.03,
-      "gap_rho_015": -1.06
+      "gap_rho_hat": -0.02,
+      "gap_rho_hat_se": 0.23,
+      "gap_rho_015": 0.46,
+      "gap_rho_015_se": 0.32
     },
     "da=-3.0|mm=1.0": {
-      "gap_rho_hat": 0.04,
-      "gap_rho_015": -0.06
+      "gap_rho_hat": -0.08,
+      "gap_rho_hat_se": 0.1,
+      "gap_rho_015": -0.01,
+      "gap_rho_015_se": 0.28
     },
     "da=-3.0|mm=2.0": {
-      "gap_rho_hat": 0.04,
-      "gap_rho_015": -0.06
+      "gap_rho_hat": -0.08,
+      "gap_rho_hat_se": 0.1,
+      "gap_rho_015": -0.01,
+      "gap_rho_015_se": 0.28
     },
     "da=-3.0|mm=4.0": {
-      "gap_rho_hat": 0.04,
-      "gap_rho_015": -0.06
+      "gap_rho_hat": -0.08,
+      "gap_rho_hat_se": 0.1,
+      "gap_rho_015": -0.07,
+      "gap_rho_015_se": 0.22
     },
     "da=-3.0|mm=8.0": {
-      "gap_rho_hat": 0.48,
-      "gap_rho_015": 0.84
+      "gap_rho_hat": -0.33,
+      "gap_rho_hat_se": 0.48,
+      "gap_rho_015": -0.24,
+      "gap_rho_015_se": 0.7
     }
   },
   "showcase": {
@@ -216,5 +248,6 @@
         "bridge_phase": 3
       }
     }
-  }
+  },
+  "manufactured_target_note": "3 seeds x 1800 episodes per cell (post-audit re-run)"
 }

@@ -1,10 +1,74 @@
 {
-  "eta=h|beta=0.3|phi=a": 78.49,
-  "eta=h|beta=0.3|phi=c": 95.46,
-  "eta=h|beta=1.0|phi=a": 76.01,
-  "eta=h|beta=1.0|phi=c": 92.14,
-  "eta=1|beta=0.3|phi=a": 78.46,
-  "eta=1|beta=0.3|phi=c": 78.36,
-  "eta=1|beta=1.0|phi=a": 75.82,
-  "eta=1|beta=1.0|phi=c": 78.63
+  "eta=h|beta=0.3|phi=a": {
+    "mean": 80.37,
+    "se": 1.86,
+    "per_seed": [
+      78.49,
+      78.52,
+      84.08
+    ]
+  },
+  "eta=h|beta=0.3|phi=c": {
+    "mean": 97.09,
+    "se": 0.82,
+    "per_seed": [
+      95.46,
+      98.02,
+      97.8
+    ]
+  },
+  "eta=h|beta=1.0|phi=a": {
+    "mean": 77.92,
+    "se": 2.04,
+    "per_seed": [
+      76.01,
+      75.74,
+      82.0
+    ]
+  },
+  "eta=h|beta=1.0|phi=c": {
+    "mean": 93.6,
+    "se": 1.31,
+    "per_seed": [
+      92.14,
+      92.44,
+      96.21
+    ]
+  },
+  "eta=1|beta=0.3|phi=a": {
+    "mean": 80.4,
+    "se": 1.88,
+    "per_seed": [
+      78.46,
+      78.58,
+      84.17
+    ]
+  },
+  "eta=1|beta=0.3|phi=c": {
+    "mean": 80.05,
+    "se": 1.84,
+    "per_seed": [
+      78.36,
+      78.05,
+      83.73
+    ]
+  },
+  "eta=1|beta=1.0|phi=a": {
+    "mean": 77.83,
+    "se": 1.97,
+    "per_seed": [
+      75.82,
+      75.9,
+      81.78
+    ]
+  },
+  "eta=1|beta=1.0|phi=c": {
+    "mean": 78.32,
+    "se": 1.19,
+    "per_seed": [
+      78.63,
+      76.12,
+      80.2
+    ]
+  }
 }

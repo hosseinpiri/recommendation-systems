@@ -15,16 +15,18 @@
       "aware": 12.28915,
       "myopic": 12.27125,
       "gap_pct": 0.14586941020677713
-    }
+    },
+    "note": "recentering bounds fixed post-audit"
   },
   "distance_15": {
-    "gap_pct_mean": 0.0,
-    "gap_pct_se": 0.0,
+    "gap_pct_mean": 0.5205413448656394,
+    "gap_pct_se": 0.1541143678916266,
     "detail": {
-      "aware": 6.439299999999999,
-      "myopic": 6.439299999999999,
-      "gap_pct": 0.0
-    }
+      "aware": 25.61685,
+      "myopic": 25.43955,
+      "gap_pct": 0.6969462903235273
+    },
+    "note": "recentering bounds fixed post-audit"
   },
   "mnl": {
     "gap_pct_mean": 0.005052354792214414,

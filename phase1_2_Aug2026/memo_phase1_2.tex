@@ -454,10 +454,11 @@ click probabilities, taxes it here (\toybackten\% at ten times the
 estimated strength): when bridges are the plan, failed bridge attempts
 damage the state the plan depends on. MIND-calibrated parameters in the
 same geometry give \toymind\%. Exact-DP sensitivity grids quantify the
-note's comparative statics and settle the one-step-bridge conjecture: at
-$\kappa=1$ the optimal path never uses more than a single bridge step,
-multi-step chains of length three require $\kappa\ge 3$, and no
-harvesting occurs at all below a target margin near 8. The showcase is
+note's comparative statics and sharpen the one-step-bridge conjecture: at
+$\kappa=1$ the optimal path uses a single bridge \emph{item} (repeated
+for up to two steps); ladders of distinct bridge items, chains of length
+three or more, first appear at $\kappa=3$; and no harvesting occurs at
+all below a target margin near 8. The showcase is
 internally consistent, and each data-motivated ingredient moves it
 toward the null.
 
@@ -470,16 +471,20 @@ only in the final five periods, so early periods are free cultivation
 (gap \vterm\%); distance-based acceptance
 $p=\sigma(\alpha_c-\lambda\lVert z-e_c\rVert^2)$ with intercepts
 recentered to hold engagement fixed, which hardens the reachability wall
-(gap \vdist\%); a slate model in which the platform recommends three
+(gap \vdist\% at $\lambda=5$, rising only to \vdistfifteen\% at
+$\lambda=15$, the sharpest wall tested); a slate model in which the platform recommends three
 categories and the user chooses by MNL with an outside option calibrated
 to the observed click rate (gap \vmnl\%); and a discounted long-horizon
 objective ($\beta=0.97$, 150 periods; gap \vinf\%). None exceeds a
 quarter of one percent. A manufactured-target sweep closes the remaining
 degree of freedom: lowering one category's intercept by up to 3 log-odds
-while multiplying its margin by up to 8 produces at most \tgtbesthat\%
-at the calibrated $\hat\rho$ (\tgtbestfast\% at $\rho=0.15$), with a
-sweet-spot structure, since a target valuable enough to justify bridges
-is also valuable enough for myopia to chase directly. The spillover transition, the one variant that is directly
+while multiplying its margin by up to 8 produces at most
+\tgtbesthat\% (SE \tgtbesthatse) at the calibrated $\hat\rho$ and
+\tgtbestfast\% (SE \tgtbestfastse) at $\rho=0.15$, with a sweet-spot
+structure, since a target valuable enough to justify bridges is also
+valuable enough for myopia to chase directly; these engineered-regime
+cells are noisier than the main grids, so the reading is
+order-of-magnitude, a few percent at best. The spillover transition, the one variant that is directly
 estimable, is rejected by the data: profiling
 $z^{+}=z+\rho[(1-s)I+sS](e_c-z)$ with $S$ built from the content
 similarity of categories gives $\hat s=\spillshat$, with the likelihood
@@ -521,12 +526,16 @@ reproduces the note's worked example exactly (the myopic and dynamic
 scores and the bridge-to-target path). The learning benchmark in the
 showcase regime, with intercepts unknown and learned across 400
 episodes, is sobering: estimate-then-plug-in dynamic programming attains
-\idxplugin\% of the full-information oracle, while the approximate index
-with the myopic-payoff potential ranges from \idxnaive\% to
-\idxmyo\%-level performance depending on tuning, and the best
-configuration found (geometric potential toward the target, horizon-
-scaled cultivation weight, small exploration bonus) reaches
-\idxbest\%. Two implications for the paper. First, the benchmark the
+\idxplugin\% of the full-information oracle (a figure that rises with
+the number of episodes as the learning cost amortizes), while the
+approximate index with the myopic-payoff potential lands in the
+mid-seventies, at or below myopic plug-in across seeds, and the best
+configuration found (geometric potential toward the target,
+horizon-scaled cultivation weight, small exploration bonus) reaches
+\idxbest\% on a three-seed average. The ordering
+oracle $>$ plug-in $\gg$ index variants is far outside noise; the finer
+differences among index variants are seed-sensitive and reported as
+ranges, not point values. Two implications for the paper. First, the benchmark the
 heuristic must beat is not myopia but plug-in planning, which is already
 near-oracle when a few persistent intercepts are the only unknowns;
 the index's case must rest on settings where plug-in fails, such as

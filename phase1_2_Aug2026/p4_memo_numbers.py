@@ -323,6 +323,7 @@ def main():
             va = json.load(fh)
         cmd("vterm", f(va["terminal"]["gap_pct_mean"], 2))
         cmd("vdist", f(va["distance_5"]["gap_pct_mean"], 2))
+        cmd("vdistfifteen", f(va["distance_15"]["gap_pct_mean"], 2))
         cmd("vmnl", f(va["mnl"]["gap_pct_mean"], 2))
     p12 = os.path.join(OUT, "p12_index_policy.json")
     if os.path.exists(p12):
@@ -336,7 +337,8 @@ def main():
     if os.path.exists(p12b):
         with open(p12b) as fh:
             tu = json.load(fh)
-        cmd("idxbest", f(max(tu.values()), 1))
+        vals = [v["mean"] if isinstance(v, dict) else v for v in tu.values()]
+        cmd("idxbest", f(max(vals), 1))
 
 
     p14 = os.path.join(OUT, "p14_remaining.json")
@@ -345,8 +347,12 @@ def main():
             rm = json.load(fh)
         cmd("vinf", f(rm["infinite_horizon"]["gap_pct_mean"], 2))
         tg = rm["manufactured_target"]
-        cmd("tgtbesthat", f(max(v["gap_rho_hat"] for v in tg.values()), 2))
-        cmd("tgtbestfast", f(max(v["gap_rho_015"] for v in tg.values()), 2))
+        best35 = max(tg.values(), key=lambda v: v["gap_rho_hat"])
+        best15 = max(tg.values(), key=lambda v: v["gap_rho_015"])
+        cmd("tgtbesthat", f(best35["gap_rho_hat"], 1))
+        cmd("tgtbesthatse", f(best35.get("gap_rho_hat_se", 0), 1))
+        cmd("tgtbestfast", f(best15["gap_rho_015"], 1))
+        cmd("tgtbestfastse", f(best15.get("gap_rho_015_se", 0), 1))
 
     with open(os.path.join(OUT, "numbers.tex"), "w") as fh:
         fh.write("\n".join(L) + "\n")
