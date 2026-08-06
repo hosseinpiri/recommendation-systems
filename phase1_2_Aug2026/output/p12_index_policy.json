@@ -1,0 +1,54 @@
+{
+  "validation": {
+    "r": [
+      1.192,
+      0.5,
+      1.762
+    ],
+    "D3": [
+      2.533,
+      3.0,
+      1.762
+    ],
+    "path": "B->A->A",
+    "expected": {
+      "r": [
+        1.192,
+        0.5,
+        1.762
+      ],
+      "D3": [
+        2.533,
+        3.0,
+        1.762
+      ],
+      "path": "B->A->A"
+    }
+  },
+  "toy_learning": {
+    "oracle": {
+      "mean_reward": 21.445,
+      "cum_reward": 8578.0,
+      "regret_vs_oracle": 0.0,
+      "pct_of_oracle": 100.0
+    },
+    "plugin-dp": {
+      "mean_reward": 21.29375,
+      "cum_reward": 8517.5,
+      "regret_vs_oracle": 60.5,
+      "pct_of_oracle": 99.29
+    },
+    "index": {
+      "mean_reward": 16.215,
+      "cum_reward": 6486.0,
+      "regret_vs_oracle": 2092.0,
+      "pct_of_oracle": 75.61
+    },
+    "myopic-plug": {
+      "mean_reward": 16.90625,
+      "cum_reward": 6762.5,
+      "regret_vs_oracle": 1815.5,
+      "pct_of_oracle": 78.84
+    }
+  }
+}

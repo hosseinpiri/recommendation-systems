@@ -429,6 +429,75 @@ this simulator, which says little about learning ephemeral article
 attractiveness, and the ease is partly an artifact of the category
 aggregation itself.
 
+
+\section{Model variants and the algorithm benchmark}\label{sec:variants}
+
+The remaining question is constructive: which modification of the model
+makes cultivation-aware planning worth having, and does the data support
+it? We test every candidate raised in the group's discussion, in two
+environments: Xinyuan's five-item showcase (the bridge regime:
+$\kappa=3$, $\rho=0.45$, a high-margin hard-to-accept target) and the
+MIND-calibrated environment.
+
+\subsection{The showcase under empirical dynamics}
+
+Our exact-DP port reproduces the showcase: the optimal policy follows the
+bridge path (B1, B2, then harvest the target) with a \toybase\% premium
+over reactive myopia, rising to \toyspill\% under the spillover
+transition. Two empirical ingredients change the picture. The
+tenure-declining update $\rho_t=1/(n_0+t)$, the form the MIND estimation
+prefers, collapses the premium to \toytenure\%: the optimal path becomes
+pure myopia even in the regime built to showcase bridges, because a step
+size that shrinks with every success removes the compounding that
+cultivation requires. And backfire, which creates the premium at low
+click probabilities, taxes it here (\toybackten\% at ten times the
+estimated strength): when bridges are the plan, failed bridge attempts
+damage the state the plan depends on. MIND-calibrated parameters in the
+same geometry give \toymind\%. The showcase is internally consistent,
+and each data-motivated ingredient moves it toward the null.
+
+\subsection{Variants at calibrated parameters}
+
+Three model variants proposed as repairs, each simulated aware-versus-
+myopic under common random numbers at the calibrated
+$(\kappa,\rho)$: a terminal-payoff objective in which revenue accrues
+only in the final five periods, so early periods are free cultivation
+(gap \vterm\%); distance-based acceptance
+$p=\sigma(\alpha_c-\lambda\lVert z-e_c\rVert^2)$ with intercepts
+recentered to hold engagement fixed, which hardens the reachability wall
+(gap \vdist\%); and a slate model in which the platform recommends three
+categories and the user chooses by MNL with an outside option calibrated
+to the observed click rate (gap \vmnl\%). None exceeds a quarter of one
+percent. The spillover transition, the one variant that is directly
+estimable, is rejected by the data: profiling
+$z^{+}=z+\rho[(1-s)I+sS](e_c-z)$ with $S$ built from the content
+similarity of categories gives $\hat s=\spillshat$, with the likelihood
+falling monotonically in $s$ (by \spilldrop\ points at $s=0.3$). The
+conclusion of Section~\ref{sec:sim} is not an artifact of the objective,
+the acceptance form, the choice model, or a missing spillover channel.
+
+\subsection{The index policy}
+
+The planned paper centers on the
+exploitation-cultivation-exploration index. Our implementation
+reproduces the note's worked example exactly (the myopic and dynamic
+scores and the bridge-to-target path). The learning benchmark in the
+showcase regime, with intercepts unknown and learned across 400
+episodes, is sobering: estimate-then-plug-in dynamic programming attains
+\idxplugin\% of the full-information oracle, while the approximate index
+with the myopic-payoff potential ranges from \idxnaive\% to
+\idxmyo\%-level performance depending on tuning, and the best
+configuration found (geometric potential toward the target, horizon-
+scaled cultivation weight, small exploration bonus) reaches
+\idxbest\%. Two implications for the paper. First, the benchmark the
+heuristic must beat is not myopia but plug-in planning, which is already
+near-oracle when a few persistent intercepts are the only unknowns;
+the index's case must rest on settings where plug-in fails, such as
+state uncertainty or short-lived items. Second, the heuristic's
+performance is dominated by the choice of potential $\Phi$ and the
+cultivation weight $\eta_h$, which the theory currently leaves free;
+pinning them down is the highest-value theoretical task.
+
 \section{Summary}\label{sec:take}
 
 \begin{enumerate}
@@ -467,6 +536,15 @@ empirical tenures) with a quarter of recommendations non-myopic. Resistance
 makes cultivation strategic; alignment sensitivity transmits it. That is
 a concrete, falsifiable claim about which platforms should invest in
 cultivation-aware algorithms.
+\item \textbf{No proposed repair changes the calibrated answer, and the
+data reject the one testable repair.} Terminal payoffs, distance-based
+acceptance, and MNL slates all leave the premium below a quarter percent;
+the spillover transition is estimated at $\hat s=\spillshat$. In the
+showcase regime the empirically preferred tenure-declining update
+eliminates the bridge path outright. And the algorithm benchmark shows
+plug-in planning at \idxplugin\% of oracle, so the index heuristic's
+contribution must be established against plug-in, not against myopia,
+and hinges on disciplining its free potential and cultivation weight.
 \item \textbf{Standing caveats.} Category-level states compress articles
 to 18 types, estimated for 14 and simulated for the largest 8 with the
 state renormalized; MIND has no margins; the 14-day window bounds

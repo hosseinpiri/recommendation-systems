@@ -1,0 +1,143 @@
+{
+  "xy_baseline": {
+    "V_opt": 21.9055,
+    "V_myopic": 16.987,
+    "premium_pct": 28.95,
+    "success_path": [
+      "B1",
+      "B2",
+      "B2",
+      "T",
+      "T",
+      "T",
+      "T"
+    ],
+    "kappa": "3.0",
+    "rho": "0.45",
+    "mode": "linear"
+  },
+  "xy_spillover": {
+    "V_opt": 24.2055,
+    "V_myopic": 16.987,
+    "premium_pct": 42.49,
+    "success_path": [
+      "B1",
+      "B2",
+      "T",
+      "T",
+      "T",
+      "T",
+      "T"
+    ],
+    "kappa": "3.0",
+    "rho": "0.45",
+    "mode": "spillover"
+  },
+  "xy_backfire_mind": {
+    "V_opt": 21.8387,
+    "V_myopic": 16.987,
+    "premium_pct": 28.56,
+    "success_path": [
+      "B1",
+      "B2",
+      "B2",
+      "T",
+      "T",
+      "T",
+      "T"
+    ],
+    "kappa": "3.0",
+    "rho": "0.45",
+    "mode": "linear",
+    "rho_ns": "-0.002"
+  },
+  "xy_backfire_10x": {
+    "V_opt": 21.3187,
+    "V_myopic": 16.987,
+    "premium_pct": 25.5,
+    "success_path": [
+      "B1",
+      "B2",
+      "B2",
+      "T",
+      "T",
+      "T",
+      "T"
+    ],
+    "kappa": "3.0",
+    "rho": "0.45",
+    "mode": "linear",
+    "rho_ns": "-0.02"
+  },
+  "xy_tenure": {
+    "V_opt": 16.987,
+    "V_myopic": 16.987,
+    "premium_pct": 0.0,
+    "success_path": [
+      "L",
+      "L",
+      "L",
+      "L",
+      "L",
+      "L",
+      "L"
+    ],
+    "kappa": "3.0",
+    "rho": "0.45",
+    "mode": "linear",
+    "tenure_n0": "2"
+  },
+  "mind_baseline": {
+    "V_opt": 16.1302,
+    "V_myopic": 16.1302,
+    "premium_pct": 0.0,
+    "success_path": [
+      "L",
+      "L",
+      "L",
+      "L",
+      "L",
+      "L",
+      "L"
+    ],
+    "kappa": "1.966",
+    "rho": "0.035",
+    "mode": "linear"
+  },
+  "mind_backfire": {
+    "V_opt": 16.1302,
+    "V_myopic": 16.1302,
+    "premium_pct": 0.0,
+    "success_path": [
+      "L",
+      "L",
+      "L",
+      "L",
+      "L",
+      "L",
+      "L"
+    ],
+    "kappa": "1.966",
+    "rho": "0.035",
+    "mode": "linear",
+    "rho_ns": "-0.002"
+  },
+  "mind_backfire_strong": {
+    "V_opt": 16.1302,
+    "V_myopic": 16.1302,
+    "premium_pct": 0.0,
+    "success_path": [
+      "L",
+      "L",
+      "L",
+      "L",
+      "L",
+      "L",
+      "L"
+    ],
+    "kappa": "1.966",
+    "rho": "0.035",
+    "mode": "linear",
+    "rho_ns": "-0.02"
+  }
+}

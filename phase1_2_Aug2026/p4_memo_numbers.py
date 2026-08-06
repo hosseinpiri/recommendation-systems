@@ -299,6 +299,45 @@ def main():
             cmd("arcpninenine", f(mg["p99"], 2))
             cmd("arcmedgap", f(mg["median"], 2))
 
+
+    # ---- post-meeting round: toy, spillover, variants, index policy
+    p10 = os.path.join(OUT, "p10_xinyuan_toy.json")
+    if os.path.exists(p10):
+        with open(p10) as fh:
+            toy = json.load(fh)
+        cmd("toybase", f(toy["xy_baseline"]["premium_pct"], 1))
+        cmd("toyspill", f(toy["xy_spillover"]["premium_pct"], 1))
+        cmd("toybackten", f(toy["xy_backfire_10x"]["premium_pct"], 1))
+        cmd("toytenure", f(toy["xy_tenure"]["premium_pct"], 1))
+        cmd("toymind", f(toy["mind_baseline"]["premium_pct"], 1))
+    p11 = os.path.join(OUT, "p11_spillover.json")
+    if os.path.exists(p11):
+        with open(p11) as fh:
+            sp = json.load(fh)
+        cmd("spillshat", f(sp["s_hat"], 1))
+        d = sp["loglik"]["rho=0.035|s=0.0"] - sp["loglik"]["rho=0.035|s=0.3"]
+        cmd("spilldrop", f(d, 0))
+    p13 = os.path.join(OUT, "p13_sim_variants.json")
+    if os.path.exists(p13):
+        with open(p13) as fh:
+            va = json.load(fh)
+        cmd("vterm", f(va["terminal"]["gap_pct_mean"], 2))
+        cmd("vdist", f(va["distance_5"]["gap_pct_mean"], 2))
+        cmd("vmnl", f(va["mnl"]["gap_pct_mean"], 2))
+    p12 = os.path.join(OUT, "p12_index_policy.json")
+    if os.path.exists(p12):
+        with open(p12) as fh:
+            ix = json.load(fh)
+        tl = ix["toy_learning"]
+        cmd("idxplugin", f(tl["plugin-dp"]["pct_of_oracle"], 1))
+        cmd("idxnaive", f(tl["index"]["pct_of_oracle"], 1))
+        cmd("idxmyo", f(tl["myopic-plug"]["pct_of_oracle"], 1))
+    p12b = os.path.join(OUT, "p12b_index_tuning.json")
+    if os.path.exists(p12b):
+        with open(p12b) as fh:
+            tu = json.load(fh)
+        cmd("idxbest", f(max(tu.values()), 1))
+
     with open(os.path.join(OUT, "numbers.tex"), "w") as fh:
         fh.write("\n".join(L) + "\n")
     print("wrote numbers.tex with", len(L), "macros")

@@ -1,0 +1,10 @@
+{
+  "eta=h|beta=0.3|phi=a": 78.49,
+  "eta=h|beta=0.3|phi=c": 95.46,
+  "eta=h|beta=1.0|phi=a": 76.01,
+  "eta=h|beta=1.0|phi=c": 92.14,
+  "eta=1|beta=0.3|phi=a": 78.46,
+  "eta=1|beta=0.3|phi=c": 78.36,
+  "eta=1|beta=1.0|phi=a": 75.82,
+  "eta=1|beta=1.0|phi=c": 78.63
+}
