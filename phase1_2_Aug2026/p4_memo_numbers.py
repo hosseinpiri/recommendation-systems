@@ -338,6 +338,16 @@ def main():
             tu = json.load(fh)
         cmd("idxbest", f(max(tu.values()), 1))
 
+
+    p14 = os.path.join(OUT, "p14_remaining.json")
+    if os.path.exists(p14):
+        with open(p14) as fh:
+            rm = json.load(fh)
+        cmd("vinf", f(rm["infinite_horizon"]["gap_pct_mean"], 2))
+        tg = rm["manufactured_target"]
+        cmd("tgtbesthat", f(max(v["gap_rho_hat"] for v in tg.values()), 2))
+        cmd("tgtbestfast", f(max(v["gap_rho_015"] for v in tg.values()), 2))
+
     with open(os.path.join(OUT, "numbers.tex"), "w") as fh:
         fh.write("\n".join(L) + "\n")
     print("wrote numbers.tex with", len(L), "macros")

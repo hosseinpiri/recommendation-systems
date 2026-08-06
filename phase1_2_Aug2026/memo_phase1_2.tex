@@ -453,8 +453,13 @@ cultivation requires. And backfire, which creates the premium at low
 click probabilities, taxes it here (\toybackten\% at ten times the
 estimated strength): when bridges are the plan, failed bridge attempts
 damage the state the plan depends on. MIND-calibrated parameters in the
-same geometry give \toymind\%. The showcase is internally consistent,
-and each data-motivated ingredient moves it toward the null.
+same geometry give \toymind\%. Exact-DP sensitivity grids quantify the
+note's comparative statics and settle the one-step-bridge conjecture: at
+$\kappa=1$ the optimal path never uses more than a single bridge step,
+multi-step chains of length three require $\kappa\ge 3$, and no
+harvesting occurs at all below a target margin near 8. The showcase is
+internally consistent, and each data-motivated ingredient moves it
+toward the null.
 
 \subsection{Variants at calibrated parameters}
 
@@ -465,16 +470,48 @@ only in the final five periods, so early periods are free cultivation
 (gap \vterm\%); distance-based acceptance
 $p=\sigma(\alpha_c-\lambda\lVert z-e_c\rVert^2)$ with intercepts
 recentered to hold engagement fixed, which hardens the reachability wall
-(gap \vdist\%); and a slate model in which the platform recommends three
+(gap \vdist\%); a slate model in which the platform recommends three
 categories and the user chooses by MNL with an outside option calibrated
-to the observed click rate (gap \vmnl\%). None exceeds a quarter of one
-percent. The spillover transition, the one variant that is directly
+to the observed click rate (gap \vmnl\%); and a discounted long-horizon
+objective ($\beta=0.97$, 150 periods; gap \vinf\%). None exceeds a
+quarter of one percent. A manufactured-target sweep closes the remaining
+degree of freedom: lowering one category's intercept by up to 3 log-odds
+while multiplying its margin by up to 8 produces at most \tgtbesthat\%
+at the calibrated $\hat\rho$ (\tgtbestfast\% at $\rho=0.15$), with a
+sweet-spot structure, since a target valuable enough to justify bridges
+is also valuable enough for myopia to chase directly. The spillover transition, the one variant that is directly
 estimable, is rejected by the data: profiling
 $z^{+}=z+\rho[(1-s)I+sS](e_c-z)$ with $S$ built from the content
 similarity of categories gives $\hat s=\spillshat$, with the likelihood
 falling monotonically in $s$ (by \spilldrop\ points at $s=0.3$). The
 conclusion of Section~\ref{sec:sim} is not an artifact of the objective,
 the acceptance form, the choice model, or a missing spillover channel.
+
+
+\subsection{If the platform is the problem: candidate datasets}
+
+MIND may sit in a low-$\kappa$, low-engagement corner of the platform
+space, and the question of where cultivation economics could be measured
+is a data question. Four criteria matter, in the order the analysis has
+shown they bind: whether declines are observable (exposure logs, needed
+for the backfire term), engagement level (the displacement budget
+$\rho\,\E[\text{consumptions}]$), item persistence (learning intercepts
+must outlive the items), and exogenous exposure variation (the missing
+ingredient for a causal $\rho$). Against these criteria:
+\emph{KuaiRand} (Kuaishou short video) is the strongest candidate, the
+only public dataset with randomized exposure interventions, which would
+identify the causal transition MIND cannot, with near-universal
+consumption; its items are ephemeral, so actions would be tags or
+creators rather than videos. \emph{Tenrec} (Tencent) has full impression
+and click logs across two surfaces with multiple engagement signals,
+supporting backfire estimation at scale. \emph{Taobao user-behavior}
+adds commercially meaningful margins by category, the primitive MIND
+lacks entirely. Long-tenure consumption datasets without exposure logs
+(MovieLens, Last.fm) can estimate taste dynamics over months rather than
+14 days, but cannot see declines, so they test the transition and not
+the resistance mechanism. The practical sequencing: Tenrec or Taobao to
+re-estimate $(\kappa,\rho,\rho_{ns})$ on a high-engagement commercial
+platform, KuaiRand if the causal question becomes central.
 
 \subsection{The index policy}
 
