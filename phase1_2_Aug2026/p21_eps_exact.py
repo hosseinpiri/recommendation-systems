@@ -105,6 +105,29 @@ def tree_value(z0, Vrel):
     return V(H, ())
 
 
+def myopic_exact(z0):
+    """Exact myopic value: failures are state-neutral, so the myopic policy's
+    states form a deterministic chain indexed by click count."""
+    states = [z0.copy()]
+    acts = []
+    for _ in range(H):
+        z = states[-1]
+        P = sigmoid(ALPHA + KAPPA * z[:8])
+        a = int(np.argmax(MARGINS * P))
+        acts.append(a)
+        z1 = (1 - RHO) * z
+        z1[a] += RHO
+        states.append(z1)
+    V = np.zeros((H + 1, H + 1))
+    for h in range(1, H + 1):
+        for j in range(H):
+            a = acts[j]
+            p = float(sigmoid(ALPHA[a] + KAPPA * states[j][a]))
+            V[h, j] = p * (MARGINS[a] + V[h - 1, min(j + 1, H)]) \
+                + (1 - p) * V[h - 1, j]
+    return float(V[H, 0])
+
+
 def myopic_mc(z0, n_sims, seed):
     rng = np.random.default_rng(seed)
     z = np.tile(z0, (n_sims, 1))
@@ -128,15 +151,14 @@ def main():
         Vrel = relax_value(z0)
         u_relax = float(Vrel[H, 0])
         u_tree = float(tree_value(z0, Vrel))
-        vm, vm_se = myopic_mc(z0, 40000, 100 + i)
+        vm = myopic_exact(z0)
         ub = min(u_relax, u_tree)
-        # conservative: subtract 3 SE from the myopic lower estimate
-        prem_bound = 100 * (ub - (vm - 3 * vm_se)) / vm
+        prem_bound = 100 * (ub - vm) / vm
         rows.append({"u_relax": u_relax, "u_tree": u_tree,
-                     "v_myopic": vm, "v_myopic_se": vm_se,
+                     "v_myopic_exact": vm,
                      "premium_upper_pct": prem_bound})
-        print(f"state {i}: U_tree={u_tree:.4f} U_relax={u_relax:.4f} "
-              f"Vmyo={vm:.4f}  premium<= {prem_bound:.2f}%", flush=True)
+        print(f"state {i}: U={ub:.6f} Vmyo_exact={vm:.6f} "
+              f"premium<= {prem_bound:.6f}%", flush=True)
     prem = np.array([r["premium_upper_pct"] for r in rows])
     out = {"H": H, "K_trunc": K_TRUNC, "n_states": len(rows),
            "premium_upper_pct_max": float(prem.max()),

@@ -22,7 +22,7 @@ SCRATCH = "/private/tmp/claude-503/-Users-piri/428a207e-f2a3-4218-996f-e2751f17b
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
 RHOS = [0.02, 0.035, 0.05]
 NS_GRID = [0.0, -0.0005, -0.001, -0.002, -0.005]
-DELTA_GRID = [0.0, 0.0005, 0.001, 0.002, 0.005]
+DELTA_GRID = [0.0, 0.001, 0.002, 0.005, 0.0075, 0.01, 0.015, 0.02]
 
 
 def z_final_correct(z0, events, rho, mag, spec):

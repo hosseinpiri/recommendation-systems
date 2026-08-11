@@ -85,10 +85,11 @@ def main():
     # M0 baseline
     res0, out["M0"], (hi, p0) = run(fa, ha, lambda i: align[i][:, None], "M0")
     # reliability by alignment decile
-    qs = np.quantile(align[hi], np.linspace(0, 1, 11))
+    qs = np.unique(np.quantile(align[hi], np.linspace(0, 1, 11)))
     rel = []
-    for a, b in zip(qs[:-1], qs[1:]):
-        m = (align[hi] >= a) & (align[hi] <= b)
+    for bi, (a, b) in enumerate(zip(qs[:-1], qs[1:])):
+        m = (align[hi] >= a) & (align[hi] < b) if bi < len(qs) - 2 \
+            else (align[hi] >= a) & (align[hi] <= b)
         if m.sum() > 100:
             rel.append({"lo": float(a), "hi": float(b),
                         "mean_p": float(p0[m].mean()),
