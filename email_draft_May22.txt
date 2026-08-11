@@ -1,0 +1,49 @@
+Subject: Revised draft addressing Meichun's comments + meeting follow-up
+
+Hi everyone,
+
+I revised the paper based on Meichun's comments from the ChatGPT review (Link). The updated file is recom_system_May22.tex. Below is a summary of how each concern was addressed, followed by answers to the questions from our May 1 meeting.
+
+
+--- Revisions based on Meichun's comments ---
+
+Backfire (the main issue):
+
+This was the most substantial revision. The original Finding 4 had an internal contradiction: the stacked OLS with continuous fractions reported a positive shown-not-clicked coefficient (+0.067), which turned out to be a specification artifact. The continuous fraction variable is correlated 0.434 with P1 baseline taste, so it acts as a proxy for latent taste rather than measuring the causal effect of exposure. I replaced the continuous-fraction specification with binary indicators (clicked / shown-not-clicked / neither) in a panel regression controlling for P1 baseline taste with user-clustered standard errors. The result: the shown-not-clicked indicator coefficient is -0.0025, which is 51 times smaller than the click effect (+0.127). Three confounds inflate the raw backfire (-0.024): (i) the simplex constraint mechanically redistributes share when clicked categories gain (+0.221 total); (ii) shown-not-clicked categories have 6.9x higher P1 baseline, making them more susceptible to mean reversion; and (iii) the continuous-fraction specification. An additive log-ratio (ALR) analysis in composition-free coordinates confirms the same pattern.
+
+The model now uses mu = 0 (taste unchanged on non-click) as the base case, with mu > 0 as a robustness extension. The appendix backfire sections have been revised to present the raw patterns while explicitly cross-referencing the controlled analysis.
+
+Language and framing:
+
+All causal language has been replaced with associational framing. There is now an explicit caveat (Section 3) stating that all findings are associational, not causal, and that the model treats estimated associations as reduced-form inputs. "Consumption/consumed" has been replaced with "clicks/clicked" throughout (about 30 instances); the only remaining uses are in the economics literature reference and the convention statement itself. "Persuasion radius" has been replaced with "effective reach" or "engagement is local" to avoid implying a causal mechanism.
+
+Data documentation:
+
+The AUC retention figure has been corrected from 98.5% to 94.7% on a chance-adjusted basis ((0.696-0.5)/(0.707-0.5)) in all four locations where it appears. A new subsection on sample selection documents the filtering criteria (143,574 users with at least 2 clicks in each period, out of ~1M total) and discusses potential selection bias. The category filtering rule (18 to 15 categories, retaining those with at least 50 articles) is now documented, with excluded categories named (northamerica, middleeast, one residual). The permutation test now includes a caveat that the z-score of 515 is a parametric extrapolation from 1,000 shuffles, not a direct empirical bound. P3 taste computation is explicitly documented: it uses only articles appearing in the test-set history but not the training-set history, preventing contamination from P2 clicks.
+
+
+--- Meeting follow-up (May 1) ---
+
+Backfire validity and compositional constraint:
+
+I said I would dig into this and get back to you. The answer is above: the raw backfire is mostly mechanical and confounded. The controlled effect is negligible (51x smaller than clicks). This resolves the concern about whether the backfire assumption should drive the model. It should not; the base case is mu = 0.
+
+One-hot article vectors:
+
+Xinyuan and Meichun raised that each article belongs to exactly one category, so the article feature vector is always a vertex e_k of the simplex. The paper now explicitly states: "This restriction is exact, not an approximation: in the MIND data, each article belongs to exactly one category, so recommending any article is equivalent to selecting a category vertex e_k." There is also a remark discussing why this vertex restriction is substantive under the linear click specification.
+
+Simplex vs. Euclidean:
+
+The paper includes a paragraph ("Why not Euclidean distance?") justifying the simplex formulation. On the simplex, the inner product theta_k is the most parsimonious compatibility function; Euclidean distance would require an additional monotone transformation. Robustness checks with Hellinger distance and total variation at the category level yield comparable AUC (~0.595), confirming the qualitative findings are metric-invariant.
+
+Literature on taste representation:
+
+Xinyuan suggested we look at how real recommendation systems represent taste vectors. I have not done a systematic literature review on this yet. From what Xinyuan found during the meeting (via GPT), frequency/share-based representations (i.e., our simplex approach) are one standard method. This remains an open item; happy to coordinate on this.
+
+
+--- Next steps ---
+
+The revised draft is attached. Please take a look when you have time and let me know if any of the revisions need further adjustment or if I missed anything. I am also happy to redo any analysis if we decide to change the modeling direction based on the literature review.
+
+Best,
+Hossein

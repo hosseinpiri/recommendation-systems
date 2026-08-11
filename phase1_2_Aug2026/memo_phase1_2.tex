@@ -210,15 +210,20 @@ only on consumption. Adding a separate update $\rho_{ns}$ for
 shown-not-clicked items, evaluated at $\hat\rho$, yields
 $\hat\rho_{ns}=\rhonshat$ (likelihood ratio \LRns): exposure without a click
 is negatively associated with subsequent affinity for that category, a
-backfire effect. Three caveats keep this result at
-arm's length from the theory. Shown items are subsampled one-in-ten, so the
-per-actual-impression step is roughly ten times smaller and the structural
-magnitude is sampling-convention-dependent; a shown-but-unclicked article is
-not necessarily a declined offer, since the user may never have seen it; and
-on a coarse joint grid the click and nonclick updates partially confound
-each other, so the profile at $\hat\rho$ is the cleaner read. The sign,
-however, is unambiguous, and a negative nonclick update is exactly the
-resistance ingredient the model currently lacks.
+backfire effect. Joint estimation on the full impression scale (a
+30{,}000-user subsample with every shown item retained, likelihood
+profiled over $\rho$ and the backfire magnitude together) settles the
+scale and the confounding concern at once: $\hat\rho=0.035$ is unchanged
+under joint estimation, the affine per-impression backfire step is
+\bjmagaff\ (likelihood ratio \bjLRaff), and a simplex-native
+proportional-redistribution specification, which downweights the
+declined category and spreads the removed mass over the others, fits
+better still (magnitude \bjmagprop, at the grid edge, likelihood ratio
+\bjLRprop). One caveat stands: a shown-but-unclicked article is not
+necessarily a declined offer, since the user may never have seen it, so
+the magnitude is attention-diluted. The resistance mechanism is not only
+present; the data have a preferred functional form for it, and it is
+exactly the resistance ingredient the model currently lacks.
 
 Second, the constant-$\rho$ update is tested against a diminishing-weight
 alternative in which each click carries weight $1/(n_0+t)$. The running
