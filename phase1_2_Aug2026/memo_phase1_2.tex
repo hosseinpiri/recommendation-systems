@@ -6,7 +6,7 @@
 \graphicspath{{output/}}
 \input{output/numbers.tex}
 
-\title{Structural Calibration of the Persuasive-Recommendation Model\\ on the MIND Dataset}
+\title{Predictive Calibration and Counterfactual Stress Tests\\ of the Persuasive-Recommendation Model on MIND}
 \author{Hossein Piri}
 \date{August 2026}
 
@@ -92,7 +92,10 @@ that a nonclick means another item was chosen rather than a decline, moves
 the estimate the other way: a slate-level conditional logit with
 position-bucket effects, fit on the \singleclick\% of impressions with
 exactly one click (every MIND train impression contains a click, so the
-model conditions on a click occurring), \emph{raises} the category
+model conditions on a click occurring, and the absolute take-it-or-
+leave-it probability of the theory is therefore not identified: our
+estimates pin down relative structure, and simulated click levels are
+calibrated to incumbent-slate probabilities), \emph{raises} the category
 coefficient to \kapDcat\ (\kapDcatsd\ per SD; \kapDdensesd\ dense) by
 identifying alignment from within-impression contrasts. In the binary model
 position effects are strong and monotone, reaching $-$\posfar\ log-odds
@@ -100,7 +103,19 @@ beyond position twenty; the conditional logit differences most of this out,
 identifying it as slate-length dilution rather than pure attention decay.
 Every specification error found so far biases $\hat\kappa$ toward zero.
 
-Holdout AUC is \aucholdout, against 0.707 for our full-feature MNL. The gap
+The model is also calibrated in probability levels, which dynamic
+programming requires and ranking metrics cannot certify: holdout
+calibration slope \calslope\ with intercept \calint, and a
+piecewise-linear spline in alignment improves holdout log loss only from
+\loglossbase\ to \loglossspline, with per-category slopes and
+history-length interactions adding less still. Two state-measurement
+checks push $\hat\kappa$ the same way as every earlier one: Dirichlet
+smoothing of the noisy history shares (concentration $c_0=\czero$
+chosen by held-out likelihood) raises the coefficient to \kapsm,
+undoing attenuation, and the cold-start users our five-click filter
+excluded show $\kappa=\kapcold$ under smoothed states, so alignment
+matters for them too. Holdout AUC is \aucholdout, against 0.707 for our
+full-feature MNL. The gap
 of ten AUC points is the predictive price of compressing every article to
 its category, and it belongs in the paper: the structural model buys
 interpretability with real predictive currency.
@@ -162,7 +177,16 @@ every state rebuilt inside each resample) gives a 95\% interval of
 every replicate rejecting $\rho=0$. Third, a
 permutation placebo (dev click labels shuffled within user) collapses the
 likelihood ratio to noise, so the effect is identified by which items a user
-clicks, not by user-level composition. At
+clicks, not by user-level composition. Three further checks close the
+remaining design questions. Rolling day-pair validation re-estimates the
+profile with evaluation days 12, 13, and 14 in turn: $\hat\rho=0.035$ on
+all three, so the estimate is not a one-day artifact. Within-impression
+click order, a processing convention for the \tiedshare\% of clicks that
+share a timestamp, leaves $\hat\rho$ unchanged under forward, reverse,
+and random orderings. And re-estimating with Dirichlet-smoothed initial
+states moves the peak to $\rho=\rhosm$ with 0.035 close behind:
+part of the raw estimate compensates for initial-state measurement error,
+which further supports reading $\rho$ as an effective update rate. At
 $\hat\rho$ the dev-window alignment coefficient is \kappadev\ (SE
 \kappadevse), consistent with the training-window estimate. Two conversions
 make the magnitude concrete: a step of \rhohat\ implies a half-life of about
@@ -350,7 +374,9 @@ off-diagonals span \gramoffmin\ to \gramoffmax\ (mean \gramoffmean; about
 half of that similarity is a common first LSA component, with the mean
 falling to roughly 0.35 when it is removed, so the raw figure overstates
 topical closeness), states are empirical dense history vectors, and
-$(\alpha,\kappa)$ come from the dense click model. The result does not change. The aware-vs-myopic gap
+$(\alpha,\kappa)$ come from the dense click model; the norm-preserving
+update is a spherical rather than affine transition, and the test covers
+the eight centroid actions, not bridges among individual articles. The result does not change. The aware-vs-myopic gap
 stays within \densegapmax\% at every $\rho$, and Meichun's exact two-period
 bridge test, the share of empirical states whose optimal two-period first
 action is a persuasive bridge, returns \bridgetwodense\% in the dense
@@ -628,7 +654,13 @@ eliminates the bridge path outright. And the algorithm benchmark shows
 plug-in planning at \idxplugin\% of oracle, so the index heuristic's
 contribution must be established against plug-in, not against myopia,
 and hinges on disciplining its free potential and cultivation weight.
-\item \textbf{Standing caveats.} Category-level states compress articles
+\item \textbf{Standing caveats.} Tables 2--3 report the original
+renormalized eight-category runs, while the equivalence bound and all
+Section~\ref{sec:variants} results use the corrected
+eight-plus-other state; the consumption fit/holdout split is by
+impression-item row, not by user or day, which suffices for the
+population-level parameters reported but is not a temporal-portability
+test. Category-level states compress articles
 to 18 types, estimated for 14 and simulated for the largest 8 with the
 state renormalized; MIND has no margins; the 14-day window bounds
 expressible cultivation; position effects and within-impression

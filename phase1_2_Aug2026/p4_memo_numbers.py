@@ -354,6 +354,44 @@ def main():
         cmd("tgtbestfast", f(best15["gap_rho_015"], 1))
         cmd("tgtbestfastse", f(best15.get("gap_rho_015_se", 0), 1))
 
+
+    # ---- review-closure round
+    p16 = os.path.join(OUT, "p16_diagnostics.json")
+    if os.path.exists(p16):
+        with open(p16) as fh:
+            dg = json.load(fh)
+        cmd("calslope", f(dg["M0"]["cal_slope"], 2))
+        cmd("calint", f(dg["M0"]["cal_intercept"], 2))
+        cmd("loglossbase", f(dg["M0"]["logloss"], 4))
+        cmd("loglossspline", f(dg["M1"]["logloss"], 4))
+    p17 = os.path.join(OUT, "p17_ordering.json")
+    if os.path.exists(p17):
+        with open(p17) as fh:
+            od = json.load(fh)
+        cmd("tiedshare", f(100 * od["share_clicks_in_tied_blocks"], 0))
+    p19 = os.path.join(OUT, "p19_shrinkage.json")
+    if os.path.exists(p19):
+        with open(p19) as fh:
+            sh = json.load(fh)
+        cmd("czero", f(sh["c0_hat"], 0))
+        cmd("kapsm", f(sh["kappa"][str(sh["c0_hat"])], 2))
+        cmd("kapcold", f(sh["cold_start"]["kappa"], 2))
+        cmd("rhosm", f(sh["rho_profile_smoothed"]["rho_hat"], 3))
+    p21 = os.path.join(OUT, "p21_eps_exact.json")
+    if os.path.exists(p21):
+        with open(p21) as fh:
+            ce = json.load(fh)
+        cmd("certmax", f(ce["premium_upper_pct_max"], 1))
+        cmd("certmed", f(ce["premium_upper_pct_median"], 1))
+    p20 = os.path.join(OUT, "p20_backfire_joint.json")
+    if os.path.exists(p20):
+        with open(p20) as fh:
+            bj = json.load(fh)
+        cmd("bjmagaff", f(bj["affine"]["mag_hat"], 4))
+        cmd("bjLRaff", f"{bj['affine']['LR_mag_vs_zero']:,.0f}")
+        cmd("bjmagprop", f(bj["prop"]["mag_hat"], 4))
+        cmd("bjLRprop", f"{bj['prop']['LR_mag_vs_zero']:,.0f}")
+
     with open(os.path.join(OUT, "numbers.tex"), "w") as fh:
         fh.write("\n".join(L) + "\n")
     print("wrote numbers.tex with", len(L), "macros")
