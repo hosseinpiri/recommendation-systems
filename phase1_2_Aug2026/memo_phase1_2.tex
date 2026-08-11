@@ -544,6 +544,43 @@ performance is dominated by the choice of potential $\Phi$ and the
 cultivation weight $\eta_h$, which the theory currently leaves free;
 pinning them down is the highest-value theoretical task.
 
+
+\section{Where this leaves the paper}\label{sec:paper}
+
+The accumulated nulls read as bad news only against the March framing, in
+which the empirics were to demonstrate that cultivation-aware
+recommendation outperforms conventional practice. Against the structure we
+have since chosen, model development plus the
+exploitation-cultivation-exploration decomposition plus a learning
+heuristic, they cost nothing and clarify much. The decomposition is exact
+regardless of parameter regimes; the showcase demonstrates a nontrivial
+bridge regime and now carries quantified comparative statics; and the
+index policy, once its potential is chosen well, is within two points of
+plug-in planning, itself near-oracle.
+
+What the empirics contribute is a boundary, and boundaries are results. A
+news platform sits outside the region where cultivation pays, for reasons
+the model itself explains: failures are state-neutral, alignment
+sensitivity is modest at the category level, and the update rate declines
+with tenure. The premium exists where resistance and sensitivity meet,
+which converts the paper's applied message from advocacy into guidance:
+platforms should invest in cultivation-aware algorithms when declines
+carry state consequences and alignment discriminates sharply, and should
+not otherwise. The empirical section supports that message with
+estimates, bounds, and the one measured complementarity, which is more
+than a confirmation exercise would have delivered.
+
+Three risks belong on the table rather than in a drawer. The
+full-information theory beyond the decomposition remains thin; the
+target regret bound is a target, not a theorem; and no claim that
+cultivation-aware algorithms are practically valuable on news-like
+platforms survives our own evidence, so the framing must be mechanism
+and boundary throughout. The corresponding priorities: discipline the
+potential and cultivation weight, whose choice separates near-oracle
+from below-myopic performance; develop the resistance extension, where
+the premium lives; and, if the causal question becomes central, take the
+calibration to a platform with randomized exposure.
+
 \section{Summary}\label{sec:take}
 
 \begin{enumerate}
