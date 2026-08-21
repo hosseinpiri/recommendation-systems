@@ -34,6 +34,20 @@ original spread moves it to \phKsix\%. The near-uniform consumption
 probabilities are a symptom of small $\kappa$, not of close intercepts;
 alignment discrimination is the single gate behind every null so far.
 
+The sweep also extends past full adoption. For $\rho\in(1,2)$ the
+transition is well defined, $T_i(z)-x_i=(1-\rho)(z-x_i)$ places the state
+on the far side of the consumed item while contracting at rate $\rho-1$
+(reflection at $\rho=2$, divergence beyond), and the tube machinery
+carries over with radius $|1-\rho|D$. In the showcase this overshoot
+regime is a slingshot: the exact-DP premium rises from \osToyOne\% at
+$\rho=1$ to \osToyMax\% at $\rho=1.95$ and the optimal route shortens
+from two bridges to one. The data want none of it: in the category
+simplex the projected transition saturates at the clicked vertex for
+every $\rho\ge1$, making overshoot empirically indistinguishable from
+full adoption, and the entire region is rejected against
+$\hat\rho=0.035$ by \osDrop\ log-likelihood points. Overshooting belongs
+in the theory's parameter map, not in the news calibration.
+
 \section{The estimation is not forcing the data}
 
 Regenerating click labels on the real design matrix from known truths
@@ -95,24 +109,6 @@ persistent-interest interpretation of $\rho$: categories with bursty
 topics show updating, categories serving stable needs show none. Both
 findings argue for a finer action space in the next dataset round.
 
-
-\section{Overshooting: $\rho>1$}
-
-The transition is well defined past full adoption: for $\rho\in(1,2)$ the
-identity $T_i(z)-x_i=(1-\rho)(z-x_i)$ places the state on the far side of
-the consumed item while still contracting toward it at rate $\rho-1$,
-with pure reflection at $\rho=2$ and divergence beyond, and the tube
-machinery carries over verbatim with radius $|1-\rho|D$. In the showcase
-the regime is not a curiosity: the exact-DP premium rises from
-\osToyOne\% at $\rho=1$ to \osToyMax\% at $\rho=1.95$, and the optimal
-route shortens from two bridges to one, a slingshot effect in which
-overshooting the first bridge covers most of the distance to the target.
-The data, however, want none of it: in the category simplex the projected
-transition saturates at the clicked vertex for every $\rho\ge1$, making
-overshoot empirically indistinguishable from full adoption, and the
-entire region is rejected against $\hat\rho=0.035$ by \osDrop\
-log-likelihood points. Overshooting belongs in the theory's parameter
-map, not in the news calibration.
 
 \section{Resistance and the index, revised}
 
