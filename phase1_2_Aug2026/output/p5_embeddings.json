@@ -1,7 +1,7 @@
 {
   "d": 50,
   "n_articles": 104151,
-  "explained_variance": 0.062480475955450844,
+  "explained_variance": 0.062480475955450816,
   "sim_items": [
     "news",
     "lifestyle",
@@ -95,6 +95,6 @@
     ]
   ],
   "offdiag_mean": 0.7107765543562417,
-  "offdiag_min": 0.43958985532315265,
-  "offdiag_max": 0.8907327221143466
+  "offdiag_min": 0.43958985532315226,
+  "offdiag_max": 0.8907327221143463
 }

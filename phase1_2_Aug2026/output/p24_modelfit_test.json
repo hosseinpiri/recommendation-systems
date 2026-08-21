@@ -1,0 +1,74 @@
+{
+  "spread=1.0|kappa=1.966": {
+    "kappa_true": 1.966,
+    "kappa_hat": 1.9736110037458763,
+    "alpha_spread_true": 0.8499999999999996,
+    "alpha_spread_hat": 0.8668185112806559,
+    "alpha_corr": 0.9966954711046307,
+    "click_rate": 0.040705945061049666
+  },
+  "spread=1.0|kappa=4.0": {
+    "kappa_true": 4.0,
+    "kappa_hat": 4.015872263019741,
+    "alpha_spread_true": 0.8499999999999996,
+    "alpha_spread_hat": 0.8630897674880291,
+    "alpha_corr": 0.9951632325355149,
+    "click_rate": 0.040623442132195695
+  },
+  "spread=1.0|kappa=6.0": {
+    "kappa_true": 6.0,
+    "kappa_hat": 5.980203242796656,
+    "alpha_spread_true": 0.8499999999999996,
+    "alpha_spread_hat": 0.906226394740683,
+    "alpha_corr": 0.9950315629918697,
+    "click_rate": 0.04054143922109235
+  },
+  "spread=3.0|kappa=1.966": {
+    "kappa_true": 1.966,
+    "kappa_hat": 1.970443392753303,
+    "alpha_spread_true": 2.5499999999999985,
+    "alpha_spread_hat": 2.5497411389838622,
+    "alpha_corr": 0.9990984306116053,
+    "click_rate": 0.04054993952285306
+  },
+  "spread=3.0|kappa=4.0": {
+    "kappa_true": 4.0,
+    "kappa_hat": 4.008272897589227,
+    "alpha_spread_true": 2.5499999999999994,
+    "alpha_spread_hat": 2.5255256529063894,
+    "alpha_corr": 0.9969900870313038,
+    "click_rate": 0.040653443197233505
+  },
+  "spread=3.0|kappa=6.0": {
+    "kappa_true": 6.0,
+    "kappa_hat": 6.0092558364953454,
+    "alpha_spread_true": 2.549999999999999,
+    "alpha_spread_hat": 2.6081081317936095,
+    "alpha_corr": 0.9983336283600108,
+    "click_rate": 0.04059894126241482
+  },
+  "spread=6.0|kappa=1.966": {
+    "kappa_true": 1.966,
+    "kappa_hat": 1.9442747842784214,
+    "alpha_spread_true": 5.099999999999998,
+    "alpha_spread_hat": 5.1425721258645,
+    "alpha_corr": 0.999498599735512,
+    "click_rate": 0.040881951309271476
+  },
+  "spread=6.0|kappa=4.0": {
+    "kappa_true": 4.0,
+    "kappa_hat": 4.003635466676562,
+    "alpha_spread_true": 5.099999999999998,
+    "alpha_spread_hat": 5.200538701333036,
+    "alpha_corr": 0.9988438444616982,
+    "click_rate": 0.04052593867082281
+  },
+  "spread=6.0|kappa=6.0": {
+    "kappa_true": 6.0,
+    "kappa_hat": 6.00198929899843,
+    "alpha_spread_true": 5.099999999999997,
+    "alpha_spread_hat": 5.19144448790172,
+    "alpha_corr": 0.9988423864199731,
+    "click_rate": 0.04085045019098178
+  }
+}
