@@ -56,11 +56,10 @@ but the turnpike threshold is $\bar H\approx\gHbarOne$ (one-hot) and
 $\approx\gHbarDense$ (dense) against 30-period sessions, and patience
 breakpoints start at retention $\delta\approx\gBreakMin$ in the $\rho=1$
 idealization: sessions this short play myopically by the theory's own
-account. Two smaller notes: with one-hot features the full dominance
-frontier is structurally 100\%, so the meaningful statement is the
-$(\alpha,m)$-restricted frontier \{\gFrontierAM\}; and the artificial
-$\alpha=-10$ item joins the frontier on margin alone, confirming the
-documented non-tightness.
+account. (Frontier notes: one-hot features make the full dominance frontier
+structurally 100\%; the meaningful $(\alpha,m)$-restricted frontier is
+\{\gFrontierAM\}, and the artificial $\alpha=-10$ item joins it on
+margin alone, confirming the documented non-tightness.)
 
 \section{The two conjectured properties fail, in scope}
 
@@ -76,6 +75,24 @@ counterexample instances, each certified in scope, are in the shared
 results for Xinyuan. The constructive reading: the exact ladder and the
 interval conjecture need a primitive condition defining a subclass, and
 that search is now example-guided rather than open-ended.
+
+
+\section{Why the parameters look uniform: they are not}
+
+Two follow-up estimations answer the uniformity question directly. First,
+the flat intercepts are largely aggregation: refitting with subcategory
+intercepts (\subN\ subcategories with sufficient data), the spread is
+\subSpread\ log-odds (\subPspread\ between the 5th and 95th percentiles),
+five times the category-level 0.85; averaging heterogeneous article types
+into 14 categories is what flattened the world. Second, the transition is
+not one $\rho$: per-category profiling gives $\rho_c\approx 0.05$ for
+news, sports, and food, 0.02 for finance and entertainment, and
+$\rho_c\approx 0$ for travel and health (likelihood ratio \rhoTravelLR\
+against the common value for travel alone). The pattern reads as
+recency-driven versus need-driven content, and it strengthens the
+persistent-interest interpretation of $\rho$: categories with bursty
+topics show updating, categories serving stable needs show none. Both
+findings argue for a finer action space in the next dataset round.
 
 \section{Resistance and the index, revised}
 

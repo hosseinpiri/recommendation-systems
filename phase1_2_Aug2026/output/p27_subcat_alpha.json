@@ -1,0 +1,175 @@
+{
+  "n_rows": 3646445,
+  "n_subcats": 122,
+  "kappa": 1.7964664541321609,
+  "subcat_alpha_total_spread": 4.2103204965448615,
+  "subcat_alpha_p5_p95": 1.8150481635708755,
+  "between_category_mean_spread": 1.3209638535597534,
+  "within_category": {
+    "autos": {
+      "n_subcats": 11,
+      "spread": 0.8182650353418359,
+      "sd": 0.26681377335473583
+    },
+    "entertainment": {
+      "n_subcats": 5,
+      "spread": 0.9654937684676939,
+      "sd": 0.3075610842895443
+    },
+    "finance": {
+      "n_subcats": 14,
+      "spread": 1.4534989337583841,
+      "sd": 0.3449852644251476
+    },
+    "foodanddrink": {
+      "n_subcats": 8,
+      "spread": 0.7396935560816869,
+      "sd": 0.21844048832084093
+    },
+    "health": {
+      "n_subcats": 11,
+      "spread": 1.9031679647407356,
+      "sd": 0.515262373809808
+    },
+    "lifestyle": {
+      "n_subcats": 16,
+      "spread": 0.9365458078364624,
+      "sd": 0.24379864319699582
+    },
+    "movies": {
+      "n_subcats": 4,
+      "spread": 1.3396179639903618,
+      "sd": 0.5782282598179218
+    },
+    "music": {
+      "n_subcats": 6,
+      "spread": 2.503169031832561,
+      "sd": 0.8628826521235222
+    },
+    "news": {
+      "n_subcats": 16,
+      "spread": 3.14801000476559,
+      "sd": 0.9221496011260721
+    },
+    "sports": {
+      "n_subcats": 13,
+      "spread": 2.495221125321339,
+      "sd": 0.5757298856828645
+    },
+    "travel": {
+      "n_subcats": 7,
+      "spread": 2.7774389446504624,
+      "sd": 0.8632293956282547
+    },
+    "tv": {
+      "n_subcats": 4,
+      "spread": 1.3615368058716895,
+      "sd": 0.4971367229534322
+    },
+    "video": {
+      "n_subcats": 6,
+      "spread": 0.5468512517379551,
+      "sd": 0.17896131381598
+    }
+  },
+  "category_means": {
+    "autos": -3.8370304638120207,
+    "entertainment": -3.7517750264745287,
+    "finance": -3.7823258192398375,
+    "foodanddrink": -3.6875496644418098,
+    "health": -3.5839009571490337,
+    "lifestyle": -3.648536812426989,
+    "movies": -3.8085045645015585,
+    "music": -3.119301591979452,
+    "news": -4.318988146158138,
+    "sports": -3.697101894033225,
+    "travel": -4.053934852372014,
+    "tv": -3.179887240632806,
+    "video": -3.2109381888137616,
+    "weather": -2.9980242925983847
+  },
+  "top10": [
+    [
+      "topnews",
+      -2.168
+    ],
+    [
+      "sports_news",
+      -2.416
+    ],
+    [
+      "musicnews",
+      -2.443
+    ],
+    [
+      "music-celebrity",
+      -2.482
+    ],
+    [
+      "tvnews",
+      -2.618
+    ],
+    [
+      "animals",
+      -2.858
+    ],
+    [
+      "mentalhealth",
+      -2.877
+    ],
+    [
+      "finance-companies",
+      -2.935
+    ],
+    [
+      "weathertopstories",
+      -2.998
+    ],
+    [
+      "tv-celebrity",
+      -3.009
+    ]
+  ],
+  "bottom10": [
+    [
+      "yearinoffbeatgoodnews",
+      -6.378
+    ],
+    [
+      "causes-military-appreciation",
+      -6.358
+    ],
+    [
+      "travel-points-rewards",
+      -6.072
+    ],
+    [
+      "factcheck",
+      -5.094
+    ],
+    [
+      "football_nfl_videos",
+      -4.911
+    ],
+    [
+      "healthnews",
+      -4.78
+    ],
+    [
+      "newsbusiness",
+      -4.696
+    ],
+    [
+      "music-gallery",
+      -4.671
+    ],
+    [
+      "newsgoodnews",
+      -4.601
+    ],
+    [
+      "movievideo",
+      -4.506
+    ]
+  ]
+}
